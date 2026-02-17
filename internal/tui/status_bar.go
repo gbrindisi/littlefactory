@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/yourusername/littlefactory/internal/driver"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/driver"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 // renderStatusBar renders the bottom status bar showing run progress and keyboard hints.

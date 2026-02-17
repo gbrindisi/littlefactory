@@ -95,7 +95,7 @@ func readEntries(path string) (map[string]bool, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	entries := make(map[string]bool)
 	scanner := bufio.NewScanner(f)
@@ -138,7 +138,7 @@ func appendEntries(path string, fileExists bool, entries []string) error {
 	if err != nil {
 		return fmt.Errorf("opening .gitignore for append: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if _, err := f.WriteString(content); err != nil {
 		return fmt.Errorf("writing to .gitignore: %w", err)

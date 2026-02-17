@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/driver"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/driver"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 // testConfig returns a test config for use in tests
@@ -286,11 +286,8 @@ func TestModel_Update_RunCompleteMsg(t *testing.T) {
 	if m.finalStatus != driver.RunStatusCompleted {
 		t.Errorf("Expected finalStatus to be RunStatusCompleted, got %s", m.finalStatus)
 	}
-	// Should NOT wait for more events after run complete
-	if cmd != nil {
-		// Note: cmd might be a batch, but no new waitForEvent should be added
-		// This is acceptable behavior
-	}
+	// cmd might be a batch, but no new waitForEvent should be added after run complete
+	_ = cmd
 }
 
 func TestModel_View_Uninitialized(t *testing.T) {

@@ -56,8 +56,8 @@ func (e *EnvValue) UnmarshalYAML(node *yaml.Node) error {
 
 // AgentConfig holds configuration for a named agent
 type AgentConfig struct {
-	Command string               `yaml:"command"`
-	Env     map[string]EnvValue  `yaml:"env,omitempty"`
+	Command string              `yaml:"command"`
+	Env     map[string]EnvValue `yaml:"env,omitempty"`
 }
 
 // Config holds the littlefactory configuration

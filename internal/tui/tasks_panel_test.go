@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 func TestRenderTasksPanel_EmptyList(t *testing.T) {

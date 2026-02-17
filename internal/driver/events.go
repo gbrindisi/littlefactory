@@ -1,7 +1,7 @@
 // Package driver provides the loop orchestrator and metadata tracking.
 package driver
 
-import "github.com/yourusername/littlefactory/internal/tasks"
+import "github.com/gbrindisi/littlefactory/internal/tasks"
 
 // RunStartedMsg is sent when the driver run begins.
 // It contains information about the planned run.

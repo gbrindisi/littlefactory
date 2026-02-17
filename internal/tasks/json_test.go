@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 func TestJSONTaskSource_Interface(t *testing.T) {
@@ -20,7 +20,7 @@ func TestJSONTaskSource_ReadWriteCycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create test config
 	cfg := &config.Config{
@@ -73,7 +73,7 @@ func TestJSONTaskSource_Ready(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	cfg := &config.Config{
 		StateDir: ".littlefactory",
@@ -113,7 +113,7 @@ func TestJSONTaskSource_Show(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	cfg := &config.Config{
 		StateDir: ".littlefactory",
@@ -153,7 +153,7 @@ func TestJSONTaskSource_Claim(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	cfg := &config.Config{
 		StateDir: ".littlefactory",
@@ -191,7 +191,7 @@ func TestJSONTaskSource_Close(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	cfg := &config.Config{
 		StateDir: ".littlefactory",
@@ -229,7 +229,7 @@ func TestJSONTaskSource_Reset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	cfg := &config.Config{
 		StateDir: ".littlefactory",
@@ -267,7 +267,7 @@ func TestNewJSONTaskSourceWithPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create a tasks.json file at a custom path
 	tasksPath := filepath.Join(tmpDir, "custom", "tasks.json")
@@ -529,7 +529,7 @@ func TestValidateTasks_MultiError(t *testing.T) {
 	}
 	errStr := err.Error()
 	// Should contain the file path header
-	if !strings.Contains(errStr, "Error loading tasks from test.json:") {
+	if !strings.Contains(errStr, "error loading tasks from test.json:") {
 		t.Errorf("expected file path header, got: %v", err)
 	}
 	// Should contain multiple errors

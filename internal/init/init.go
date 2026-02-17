@@ -7,10 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/yourusername/littlefactory/internal/init/agentsmd"
-	"github.com/yourusername/littlefactory/internal/init/gitignore"
-	"github.com/yourusername/littlefactory/internal/init/openspec"
-	"github.com/yourusername/littlefactory/internal/init/skills"
+	"github.com/gbrindisi/littlefactory/internal/init/agentsmd"
+	"github.com/gbrindisi/littlefactory/internal/init/gitignore"
+	"github.com/gbrindisi/littlefactory/internal/init/openspec"
+	"github.com/gbrindisi/littlefactory/internal/init/skills"
 )
 
 // DefaultFactoryfile is the default content for a new Factoryfile.
@@ -90,10 +90,10 @@ func createFactoryfile(log *logger, projectRoot string) error {
 	factoryfileYAMLPath := filepath.Join(projectRoot, "Factoryfile.yaml")
 
 	if _, err := os.Stat(factoryfilePath); err == nil {
-		return fmt.Errorf("Factoryfile already exists")
+		return fmt.Errorf("factoryfile already exists")
 	}
 	if _, err := os.Stat(factoryfileYAMLPath); err == nil {
-		return fmt.Errorf("Factoryfile.yaml already exists")
+		return fmt.Errorf("factoryfile.yaml already exists")
 	}
 
 	if err := os.WriteFile(factoryfilePath, []byte(DefaultFactoryfile), 0o644); err != nil {

@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/worktree"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/tasks"
-	"github.com/yourusername/littlefactory/internal/worktree"
 )
 
 // Status command flag variables

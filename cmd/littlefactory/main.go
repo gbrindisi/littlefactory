@@ -10,21 +10,20 @@ import (
 	"syscall"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gbrindisi/littlefactory/internal/agent"
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/driver"
+	lfinit "github.com/gbrindisi/littlefactory/internal/init"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/tui"
+	"github.com/gbrindisi/littlefactory/internal/worktree"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/littlefactory/internal/agent"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/driver"
-	lfinit "github.com/yourusername/littlefactory/internal/init"
-	"github.com/yourusername/littlefactory/internal/tasks"
-	"github.com/yourusername/littlefactory/internal/tui"
-	"github.com/yourusername/littlefactory/internal/worktree"
 )
 
-// Version information - set during build
+// Version information - set during build via ldflags
 var (
 	version = "dev"
 	commit  = "unknown"
-	date    = "unknown"
 )
 
 // CLI flag variables
@@ -83,13 +82,13 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("littlefactory %s\n", version)
-		fmt.Printf("  commit: %s\n", commit)
-		fmt.Printf("  built:  %s\n", date)
+		fmt.Printf("littlefactory %s (commit: %s)\n", version, commit)
 	},
 }
 
 func init() {
+	rootCmd.Version = version
+
 	// Add flags to run command
 	runCmd.Flags().IntVar(&maxIterations, "max-iterations", 0,
 		"Maximum number of iterations (default: from config or 10)")
@@ -148,7 +147,7 @@ func runUpgrade(cmd *cobra.Command, args []string) {
 func validateChangeFlags(projectRoot, change, tasks string, wt bool) error {
 	// -w requires -c
 	if wt && change == "" {
-		return fmt.Errorf("The --worktree flag requires --change to specify the branch name")
+		return fmt.Errorf("the --worktree flag requires --change to specify the branch name")
 	}
 
 	// Validate explicit --tasks path exists
@@ -164,12 +163,12 @@ func validateChangeFlags(projectRoot, change, tasks string, wt bool) error {
 	if change != "" {
 		changeDir := filepath.Join(projectRoot, "openspec", "changes", change)
 		if _, err := os.Stat(changeDir); os.IsNotExist(err) {
-			return fmt.Errorf("Change '%s' not found at openspec/changes/%s/", change, change)
+			return fmt.Errorf("change %q not found at openspec/changes/%s/", change, change)
 		}
 
 		tasksPath := filepath.Join(changeDir, "tasks.json")
 		if _, err := os.Stat(tasksPath); os.IsNotExist(err) {
-			return fmt.Errorf("No tasks.json found for change '%s'", change)
+			return fmt.Errorf("no tasks.json found for change %q", change)
 		}
 	}
 
@@ -185,7 +184,7 @@ func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
 		return "", fmt.Errorf("checking git status: %w", err)
 	}
 	if !clean {
-		return "", fmt.Errorf("Uncommitted changes detected. Commit or stash before creating worktree.")
+		return "", fmt.Errorf("uncommitted changes detected; commit or stash before creating worktree")
 	}
 
 	// Check if worktree already exists
@@ -194,7 +193,7 @@ func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
 		return "", fmt.Errorf("checking worktree: %w", err)
 	}
 	if exists {
-		return "", fmt.Errorf("Worktree for '%s' already exists at %s. Run without -w to use existing worktree.", change, existingPath)
+		return "", fmt.Errorf("worktree for %q already exists at %s; run without -w to use existing worktree", change, existingPath)
 	}
 
 	// Resolve worktrees directory

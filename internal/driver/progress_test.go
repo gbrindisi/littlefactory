@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 func TestInitProgressFile_CreatesNewFile(t *testing.T) {

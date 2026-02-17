@@ -16,10 +16,6 @@ var (
 			Bold(true).
 			Foreground(lipgloss.Color("2")) // Green for active task
 
-	cursorTaskStyle = lipgloss.NewStyle().
-			Background(lipgloss.Color("240")). // Gray background for cursor
-			Foreground(lipgloss.Color("255"))  // White text
-
 	normalTaskStyle = lipgloss.NewStyle()
 
 	// Status bar style

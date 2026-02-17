@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fsnotify/fsnotify"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/driver"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/fsnotify/fsnotify"
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/driver"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 const (
@@ -205,7 +205,7 @@ func (m *Model) View() string {
 		}
 		rightPanel = lipgloss.NewStyle().
 			Faint(true).
-			Width(m.width - leftPanelWidth).
+			Width(m.width-leftPanelWidth).
 			Height(contentHeight).
 			Padding(1, 2).
 			Render(placeholder)
@@ -308,7 +308,7 @@ func watchProgressFile(path string) tea.Cmd {
 			// Watcher creation failed, return nil to stop watching
 			return nil
 		}
-		defer watcher.Close()
+		defer func() { _ = watcher.Close() }()
 
 		// Try to watch the file first
 		err = watcher.Add(path)

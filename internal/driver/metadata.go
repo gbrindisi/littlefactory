@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 // pythonISOFormat matches Python's datetime.isoformat() output for naive datetimes.
@@ -67,17 +67,17 @@ type RunMetadata struct {
 
 // runMetadataJSON is the JSON representation of RunMetadata with explicit field order.
 type runMetadataJSON struct {
-	RunID                       string                   `json:"run_id"`
-	StartedAt                   string                   `json:"started_at"`
-	EndedAt                     *string                  `json:"ended_at"`
-	Status                      RunStatus                `json:"status"`
-	MaxIterations               int                      `json:"max_iterations"`
-	TotalIterations             int                      `json:"total_iterations"`
-	SuccessfulIterations        int                      `json:"successful_iterations"`
-	FailedIterations            int                      `json:"failed_iterations"`
-	TotalDurationSeconds        *float64                 `json:"total_duration_seconds"`
-	AvgIterationDurationSeconds *float64                 `json:"avg_iteration_duration_seconds"`
-	Iterations                  []iterationMetadataJSON  `json:"iterations"`
+	RunID                       string                  `json:"run_id"`
+	StartedAt                   string                  `json:"started_at"`
+	EndedAt                     *string                 `json:"ended_at"`
+	Status                      RunStatus               `json:"status"`
+	MaxIterations               int                     `json:"max_iterations"`
+	TotalIterations             int                     `json:"total_iterations"`
+	SuccessfulIterations        int                     `json:"successful_iterations"`
+	FailedIterations            int                     `json:"failed_iterations"`
+	TotalDurationSeconds        *float64                `json:"total_duration_seconds"`
+	AvgIterationDurationSeconds *float64                `json:"avg_iteration_duration_seconds"`
+	Iterations                  []iterationMetadataJSON `json:"iterations"`
 }
 
 // MarshalJSON implements custom JSON marshaling for RunMetadata to ensure

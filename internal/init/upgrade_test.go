@@ -41,8 +41,8 @@ func TestUpgrade_FailsWithoutFactoryfile(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected Upgrade to fail without Factoryfile")
 	}
-	if !strings.Contains(err.Error(), "No Factoryfile found") {
-		t.Errorf("expected 'No Factoryfile found' error, got: %v", err)
+	if !strings.Contains(err.Error(), "no Factoryfile found") {
+		t.Errorf("expected 'no Factoryfile found' error, got: %v", err)
 	}
 }
 

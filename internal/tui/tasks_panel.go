@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 // renderTasksPanel renders the left panel containing the task list.

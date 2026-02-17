@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 //go:embed embedded/WORKER.md

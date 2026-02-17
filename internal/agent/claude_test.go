@@ -7,8 +7,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
+
+func skipCI(t *testing.T) {
+	t.Helper()
+	if os.Getenv("CI") != "" {
+		t.Skip("skipping PTY test in CI")
+	}
+}
 
 // TestConfigurableAgentImplementsInterface verifies ConfigurableAgent implements Agent interface.
 func TestConfigurableAgentImplementsInterface(t *testing.T) {
@@ -28,6 +35,7 @@ func TestNewConfigurableAgent(t *testing.T) {
 
 // TestConfigurableAgentRun_Echo verifies running a simple echo command.
 func TestConfigurableAgentRun_Echo(t *testing.T) {
+	skipCI(t)
 	ag := NewConfigurableAgent("cat", nil)
 	result, err := ag.Run(context.Background(), "hello world", io.Discard)
 
@@ -50,6 +58,7 @@ func TestConfigurableAgentRun_Echo(t *testing.T) {
 
 // TestConfigurableAgentRun_WithArgs verifies command with arguments.
 func TestConfigurableAgentRun_WithArgs(t *testing.T) {
+	skipCI(t)
 	ag := NewConfigurableAgent("head -n 1", nil)
 	result, err := ag.Run(context.Background(), "line1\nline2\nline3", io.Discard)
 
@@ -215,7 +224,7 @@ func TestResolveEnv_StaticValues(t *testing.T) {
 // TestResolveEnv_ShellCommands verifies dynamic env var resolution via shell.
 func TestResolveEnv_ShellCommands(t *testing.T) {
 	envConfig := map[string]config.EnvValue{
-		"COMPUTED": {Shell: "printf hello"},
+		"COMPUTED":     {Shell: "printf hello"},
 		"WITH_NEWLINE": {Shell: "echo world"}, // echo adds newline
 	}
 
@@ -278,16 +287,7 @@ func TestResolveEnv_MixedStaticAndShell(t *testing.T) {
 
 // TestResolveEnv_OverrideParentEnv verifies config overrides parent environment.
 func TestResolveEnv_OverrideParentEnv(t *testing.T) {
-	// Set a test var in parent env
-	originalValue := os.Getenv("TEST_OVERRIDE_VAR")
-	os.Setenv("TEST_OVERRIDE_VAR", "original")
-	defer func() {
-		if originalValue == "" {
-			os.Unsetenv("TEST_OVERRIDE_VAR")
-		} else {
-			os.Setenv("TEST_OVERRIDE_VAR", originalValue)
-		}
-	}()
+	t.Setenv("TEST_OVERRIDE_VAR", "original")
 
 	envConfig := map[string]config.EnvValue{
 		"TEST_OVERRIDE_VAR": {Static: "overridden"},
@@ -324,6 +324,7 @@ func TestResolveEnv_EmptyConfig(t *testing.T) {
 
 // TestConfigurableAgentRun_WithEnv verifies env vars are passed to subprocess.
 func TestConfigurableAgentRun_WithEnv(t *testing.T) {
+	skipCI(t)
 	envConfig := map[string]config.EnvValue{
 		"TEST_VAR": {Static: "test_value"},
 	}
@@ -395,6 +396,7 @@ func TestEvalShellCommand(t *testing.T) {
 
 // TestConfigurableAgentRun_WithMixedEnv verifies both static and shell env vars work together.
 func TestConfigurableAgentRun_WithMixedEnv(t *testing.T) {
+	skipCI(t)
 	envConfig := map[string]config.EnvValue{
 		"STATIC_VAR": {Static: "static_value"},
 		"SHELL_VAR":  {Shell: "printf shell_value"},

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/yourusername/littlefactory/internal/init/openspec"
+	"github.com/gbrindisi/littlefactory/internal/init/openspec"
 )
 
 // Upgrade applies littlefactory configuration improvements to an existing project.
@@ -23,7 +23,7 @@ func Upgrade(projectRoot string) error {
 	_, errYAML := os.Stat(factoryfileYAMLPath)
 
 	if errPlain != nil && errYAML != nil {
-		return fmt.Errorf("No Factoryfile found. Run 'littlefactory init' first.")
+		return fmt.Errorf("no Factoryfile found; run 'littlefactory init' first")
 	}
 
 	log := newLogger(4)

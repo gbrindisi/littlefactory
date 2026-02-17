@@ -5,8 +5,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/agent"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/agent"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 // MockAgent implements the Agent interface for testing.
@@ -204,8 +204,8 @@ func TestMockTaskSourceShowDefaultBehavior(t *testing.T) {
 func TestMockTaskSourceClaimBehavior(t *testing.T) {
 	mock := &MockTaskSource{}
 
-	mock.Claim("task-1")
-	mock.Claim("task-2")
+	_ = mock.Claim("task-1")
+	_ = mock.Claim("task-2")
 
 	if len(mock.ClaimedIDs) != 2 {
 		t.Errorf("len(ClaimedIDs) = %d, want 2", len(mock.ClaimedIDs))
@@ -222,8 +222,8 @@ func TestMockTaskSourceClaimBehavior(t *testing.T) {
 func TestMockTaskSourceCloseBehavior(t *testing.T) {
 	mock := &MockTaskSource{}
 
-	mock.Close("task-1", "completed")
-	mock.Close("task-2", "wont-fix")
+	_ = mock.Close("task-1", "completed")
+	_ = mock.Close("task-2", "wont-fix")
 
 	if len(mock.ClosedIDs) != 2 {
 		t.Errorf("len(ClosedIDs) = %d, want 2", len(mock.ClosedIDs))
@@ -240,8 +240,8 @@ func TestMockTaskSourceCloseBehavior(t *testing.T) {
 func TestMockTaskSourceResetBehavior(t *testing.T) {
 	mock := &MockTaskSource{}
 
-	mock.Reset("task-1")
-	mock.Reset("task-2")
+	_ = mock.Reset("task-1")
+	_ = mock.Reset("task-2")
 
 	if len(mock.ResetIDs) != 2 {
 		t.Errorf("len(ResetIDs) = %d, want 2", len(mock.ResetIDs))

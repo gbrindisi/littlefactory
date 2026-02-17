@@ -28,22 +28,22 @@ func (op *OutputPanel) GotoBottom() {
 
 // LineUp scrolls up by n lines.
 func (op *OutputPanel) LineUp(n int) {
-	op.viewport.LineUp(n)
+	op.viewport.ScrollUp(n)
 }
 
 // LineDown scrolls down by n lines.
 func (op *OutputPanel) LineDown(n int) {
-	op.viewport.LineDown(n)
+	op.viewport.ScrollDown(n)
 }
 
 // ViewUp scrolls up by one page.
 func (op *OutputPanel) ViewUp() {
-	op.viewport.ViewUp()
+	op.viewport.PageUp()
 }
 
 // ViewDown scrolls down by one page.
 func (op *OutputPanel) ViewDown() {
-	op.viewport.ViewDown()
+	op.viewport.PageDown()
 }
 
 // SetSize updates the viewport dimensions.

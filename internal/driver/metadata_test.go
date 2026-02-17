@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 func TestGenerateRunID(t *testing.T) {

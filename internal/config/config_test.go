@@ -968,9 +968,9 @@ func TestEnvValue_UnmarshalYAML_EdgeCases(t *testing.T) {
 			},
 		},
 		{
-			name: "empty string value",
+			name:       "empty string value",
 			envContent: `      EMPTY_VAR: ""`,
-			wantErr: false,
+			wantErr:    false,
 			validate: func(t *testing.T, agent AgentConfig) {
 				if agent.Env["EMPTY_VAR"].Static != "" {
 					t.Errorf("EMPTY_VAR.Static = %q, want empty string", agent.Env["EMPTY_VAR"].Static)
@@ -978,9 +978,9 @@ func TestEnvValue_UnmarshalYAML_EdgeCases(t *testing.T) {
 			},
 		},
 		{
-			name: "multiline string value",
+			name:       "multiline string value",
 			envContent: `      MULTILINE: "line1\nline2\nline3"`,
-			wantErr: false,
+			wantErr:    false,
 			validate: func(t *testing.T, agent AgentConfig) {
 				want := "line1\nline2\nline3"
 				if agent.Env["MULTILINE"].Static != want {
@@ -1013,9 +1013,9 @@ func TestEnvValue_UnmarshalYAML_EdgeCases(t *testing.T) {
 			},
 		},
 		{
-			name: "special characters in static value",
+			name:       "special characters in static value",
 			envContent: `      SPECIAL: "!@#$%^&*()"`,
-			wantErr: false,
+			wantErr:    false,
 			validate: func(t *testing.T, agent AgentConfig) {
 				want := "!@#$%^&*()"
 				if agent.Env["SPECIAL"].Static != want {

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yourusername/littlefactory/internal/driver"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/driver"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 func TestRenderStatusBar_EmptyTaskList(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 const (
@@ -32,7 +32,7 @@ func InitProgressFile(projectRoot string, cfg *config.Config) error {
 		if err != nil {
 			return fmt.Errorf("failed to create progress file: %w", err)
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		header := fmt.Sprintf("# Little Factory Progress Log\n\n**Started:** %s\n\n---\n\n",
 			time.Now().Format(time.RFC3339))
@@ -60,7 +60,7 @@ func AppendSessionToProgress(projectRoot string, cfg *config.Config, iteration i
 	if err != nil {
 		return fmt.Errorf("failed to open progress file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Build the iteration block with markdown formatting
 	var content string

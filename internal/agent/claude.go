@@ -12,7 +12,7 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/creack/pty"
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 // ConfigurableAgent implements the Agent interface using a configurable command.
@@ -116,8 +116,8 @@ func (c *ConfigurableAgent) Run(ctx context.Context, prompt string, output io.Wr
 	if err != nil {
 		return AgentResult{ExitCode: -1}, fmt.Errorf("failed to create PTY: %w", err)
 	}
-	defer ptmx.Close() // Cleanup master
-	defer tty.Close()   // Cleanup slave
+	defer func() { _ = ptmx.Close() }()
+	defer func() { _ = tty.Close() }()
 
 	// Set stdout and stderr to PTY slave (for TTY detection)
 	cmd.Stdout = tty
@@ -135,14 +135,14 @@ func (c *ConfigurableAgent) Run(ctx context.Context, prompt string, output io.Wr
 	}
 
 	// Close the TTY slave in parent process (child has its copy)
-	tty.Close()
+	_ = tty.Close()
 
 	// Write prompt to stdin and close it to signal EOF
 	_, err = io.WriteString(stdinPipe, prompt)
 	if err != nil {
 		return AgentResult{ExitCode: -1}, fmt.Errorf("failed to write prompt: %w", err)
 	}
-	stdinPipe.Close() // Signal EOF to subprocess
+	_ = stdinPipe.Close() // Signal EOF to subprocess
 
 	// Capture output for metrics while also streaming to output writer
 	var rawBuf bytes.Buffer

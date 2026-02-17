@@ -1,4 +1,4 @@
-module github.com/yourusername/littlefactory
+module github.com/gbrindisi/littlefactory
 
 go 1.24.4
 

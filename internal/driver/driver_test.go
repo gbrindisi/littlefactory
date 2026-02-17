@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/littlefactory/internal/agent"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/agent"
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
 // Note: MockAgent and MockTaskSource are defined in mocks_test.go
@@ -439,7 +439,7 @@ func TestRun_WorktreePathSwitchesDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(origDir)
+	defer func() { _ = os.Chdir(origDir) }()
 
 	var capturedDir string
 	ag := &MockAgent{
@@ -502,7 +502,7 @@ func TestRun_NoWorktreePathPreservesDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(origDir)
+	defer func() { _ = os.Chdir(origDir) }()
 
 	ag := &MockAgent{}
 	ts := &MockTaskSource{ReadyTasks: []tasks.Task{}} // No tasks, exits early

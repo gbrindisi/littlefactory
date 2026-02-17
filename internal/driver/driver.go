@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourusername/littlefactory/internal/agent"
-	"github.com/yourusername/littlefactory/internal/config"
-	"github.com/yourusername/littlefactory/internal/tasks"
-	"github.com/yourusername/littlefactory/internal/template"
+	"github.com/gbrindisi/littlefactory/internal/agent"
+	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/tasks"
+	"github.com/gbrindisi/littlefactory/internal/template"
 )
 
 // Driver is the core orchestrator that runs the autonomous agent loop.
@@ -95,7 +95,7 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 		if err := os.Chdir(d.worktreePath); err != nil {
 			return RunStatusFailed
 		}
-		defer os.Chdir(origDir)
+		defer func() { _ = os.Chdir(origDir) }()
 	}
 
 	// Initialize run metadata
@@ -107,19 +107,14 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 		Iterations:    []IterationMetadata{},
 	}
 
-	// Initialize progress file
-	if err := InitProgressFile(d.effectiveRoot(), d.config); err != nil {
-		// Log but continue - not fatal
-	}
+	// Initialize progress file (non-fatal)
+	_ = InitProgressFile(d.effectiveRoot(), d.config)
 
 	// Save initial metadata
 	_ = SaveMetadata(d.effectiveRoot(), d.config, d.metadata)
 
 	// Get initial ready task count and emit start event
-	readyTasks, err := d.taskSource.Ready()
-	if err != nil {
-		// Log error but continue - might recover
-	}
+	readyTasks, _ := d.taskSource.Ready()
 	d.emit(RunStartedMsg{
 		MaxIterations: d.config.MaxIterations,
 		ReadyCount:    len(readyTasks),

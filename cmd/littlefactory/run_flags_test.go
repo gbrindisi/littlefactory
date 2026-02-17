@@ -13,7 +13,7 @@ func TestValidateChangeFlags_WorktreeRequiresChange(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when -w is set without -c")
 	}
-	expected := "The --worktree flag requires --change to specify the branch name"
+	expected := "the --worktree flag requires --change to specify the branch name"
 	if err.Error() != expected {
 		t.Errorf("expected %q, got %q", expected, err.Error())
 	}
@@ -33,7 +33,7 @@ func TestValidateChangeFlags_ChangeNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for nonexistent change")
 	}
-	if got := err.Error(); got != "Change 'nonexistent' not found at openspec/changes/nonexistent/" {
+	if got := err.Error(); got != `change "nonexistent" not found at openspec/changes/nonexistent/` {
 		t.Errorf("unexpected error: %s", got)
 	}
 }
@@ -51,7 +51,7 @@ func TestValidateChangeFlags_ChangeNoTasksJSON(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing tasks.json")
 	}
-	if got := err.Error(); got != "No tasks.json found for change 'incomplete-change'" {
+	if got := err.Error(); got != `no tasks.json found for change "incomplete-change"` {
 		t.Errorf("unexpected error: %s", got)
 	}
 }

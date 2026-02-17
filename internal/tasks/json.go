@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/config"
 )
 
 // JSONTaskSource implements TaskSource using a local JSON file.
@@ -74,7 +74,7 @@ func ValidateTasks(taskList []Task, filePath string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Error loading tasks from %s:\n  %s", filePath, strings.Join(errs, "\n  "))
+	return fmt.Errorf("error loading tasks from %s:\n  %s", filePath, strings.Join(errs, "\n  "))
 }
 
 // validateBlockerChain validates that tasks form a strict linear sequence via blockers.

@@ -1,0 +1,395 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"sync"
+	"syscall"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/spf13/cobra"
+	"github.com/yourusername/littlefactory/internal/agent"
+	"github.com/yourusername/littlefactory/internal/config"
+	"github.com/yourusername/littlefactory/internal/driver"
+	lfinit "github.com/yourusername/littlefactory/internal/init"
+	"github.com/yourusername/littlefactory/internal/tasks"
+	"github.com/yourusername/littlefactory/internal/tui"
+	"github.com/yourusername/littlefactory/internal/worktree"
+)
+
+// Version information - set during build
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
+
+// CLI flag variables
+var (
+	maxIterations int
+	timeout       int
+	changeName    string
+	tasksPath     string
+	useWorktree   bool
+)
+
+// rootCmd is the base command for the CLI
+var rootCmd = &cobra.Command{
+	Use:   "littlefactory",
+	Short: "An autonomous coding agent orchestrator",
+	Long: `littlefactory is an autonomous coding agent that runs iterative loops
+to complete software engineering tasks using Claude Code.`,
+}
+
+// initCmd initializes a new littlefactory project
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize a new littlefactory project",
+	Long: `Initialize a new littlefactory project in the current directory.
+Creates Factoryfile, sets up AGENTS.md, updates .gitignore, and installs skills.
+Fails if Factoryfile or Factoryfile.yaml already exists.`,
+	Run: runInit,
+}
+
+// runCmd is the command to run the agent loop
+var runCmd = &cobra.Command{
+	Use:   "run [agent]",
+	Short: "Run the autonomous agent loop",
+	Long: `Run the autonomous agent loop that iteratively processes tasks.
+The agent will continue running until all tasks are complete,
+max iterations is reached, or it is interrupted.
+
+If agent name is not specified, uses the default_agent from config.`,
+	Args: cobra.MaximumNArgs(1),
+	Run:  runRun,
+}
+
+// upgradeCmd upgrades an existing littlefactory project
+var upgradeCmd = &cobra.Command{
+	Use:   "upgrade",
+	Short: "Upgrade littlefactory configuration",
+	Long: `Upgrade an existing littlefactory project in the current directory.
+Applies AGENTS.md setup, .gitignore updates, and skill installation.
+Requires an existing Factoryfile (run 'littlefactory init' first for new projects).
+All operations are idempotent and safe to run multiple times.`,
+	Run: runUpgrade,
+}
+
+// versionCmd shows version information
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Show version information",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("littlefactory %s\n", version)
+		fmt.Printf("  commit: %s\n", commit)
+		fmt.Printf("  built:  %s\n", date)
+	},
+}
+
+func init() {
+	// Add flags to run command
+	runCmd.Flags().IntVar(&maxIterations, "max-iterations", 0,
+		"Maximum number of iterations (default: from config or 10)")
+	runCmd.Flags().IntVar(&timeout, "timeout", 0,
+		"Timeout in seconds per iteration (default: from config or 600)")
+	runCmd.Flags().StringVarP(&changeName, "change", "c", "",
+		"OpenSpec change name to use as task source")
+	runCmd.Flags().StringVarP(&tasksPath, "tasks", "t", "",
+		"Explicit path to tasks.json file")
+	runCmd.Flags().BoolVarP(&useWorktree, "worktree", "w", false,
+		"Create a new git worktree for the change")
+
+	// Add subcommands
+	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(upgradeCmd)
+	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+// runInit creates a new littlefactory project with all setup steps.
+func runInit(cmd *cobra.Command, args []string) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := lfinit.Run(cwd); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+// runUpgrade applies configuration improvements to an existing project.
+func runUpgrade(cmd *cobra.Command, args []string) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := lfinit.Upgrade(cwd); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+// validateChangeFlags validates --tasks, --change, and --worktree flag combinations.
+// Returns an error if validation fails.
+func validateChangeFlags(projectRoot, change, tasks string, wt bool) error {
+	// -w requires -c
+	if wt && change == "" {
+		return fmt.Errorf("The --worktree flag requires --change to specify the branch name")
+	}
+
+	// Validate explicit --tasks path exists
+	if tasks != "" {
+		if _, err := os.Stat(tasks); os.IsNotExist(err) {
+			return fmt.Errorf("tasks file not found: %s", tasks)
+		}
+		// --tasks takes priority; skip --change validation
+		return nil
+	}
+
+	// Validate change exists if --change is specified
+	if change != "" {
+		changeDir := filepath.Join(projectRoot, "openspec", "changes", change)
+		if _, err := os.Stat(changeDir); os.IsNotExist(err) {
+			return fmt.Errorf("Change '%s' not found at openspec/changes/%s/", change, change)
+		}
+
+		tasksPath := filepath.Join(changeDir, "tasks.json")
+		if _, err := os.Stat(tasksPath); os.IsNotExist(err) {
+			return fmt.Errorf("No tasks.json found for change '%s'", change)
+		}
+	}
+
+	return nil
+}
+
+// prepareWorktree performs worktree precondition checks and creates the worktree.
+// Returns the worktree path on success.
+func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
+	// Check for clean working tree
+	clean, err := worktree.IsClean(projectRoot)
+	if err != nil {
+		return "", fmt.Errorf("checking git status: %w", err)
+	}
+	if !clean {
+		return "", fmt.Errorf("Uncommitted changes detected. Commit or stash before creating worktree.")
+	}
+
+	// Check if worktree already exists
+	exists, existingPath, err := worktree.WorktreeExists(projectRoot, change)
+	if err != nil {
+		return "", fmt.Errorf("checking worktree: %w", err)
+	}
+	if exists {
+		return "", fmt.Errorf("Worktree for '%s' already exists at %s. Run without -w to use existing worktree.", change, existingPath)
+	}
+
+	// Resolve worktrees directory
+	resolvedDir := worktreesDir
+	if !filepath.IsAbs(resolvedDir) {
+		resolvedDir = filepath.Join(projectRoot, resolvedDir)
+	}
+
+	// Create the worktree
+	return worktree.Create(projectRoot, change, resolvedDir)
+}
+
+// runRun executes the main agent loop
+func runRun(cmd *cobra.Command, args []string) {
+	// Detect project root
+	projectRoot, err := config.FindProjectRoot()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error detecting project root: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Build CLI flags for config override
+	cliFlags := config.CLIFlags{}
+	if cmd.Flags().Changed("max-iterations") {
+		cliFlags.MaxIterations = &maxIterations
+	}
+	if cmd.Flags().Changed("timeout") {
+		cliFlags.Timeout = &timeout
+	}
+
+	// Load configuration
+	cfg, err := config.LoadConfig(projectRoot, cliFlags)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Resolve --tasks path: relative paths are resolved against cwd
+	if tasksPath != "" && !filepath.IsAbs(tasksPath) {
+		cwd, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		tasksPath = filepath.Join(cwd, tasksPath)
+	}
+
+	// Validate tasks, change, and worktree flags
+	if err := validateChangeFlags(projectRoot, changeName, tasksPath, useWorktree); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Handle worktree creation if -w is set
+	var worktreePath string
+	if useWorktree {
+		wtPath, err := prepareWorktree(projectRoot, changeName, cfg.WorktreesDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		worktreePath = wtPath
+	}
+
+	// Determine which agent to use
+	agentName := cfg.DefaultAgent
+	if len(args) > 0 {
+		agentName = args[0]
+	}
+
+	// Look up agent config
+	agentConfig, ok := cfg.Agents[agentName]
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Error: agent %q is not configured\n", agentName)
+		fmt.Fprintf(os.Stderr, "Available agents: ")
+		first := true
+		for name := range cfg.Agents {
+			if !first {
+				fmt.Fprintf(os.Stderr, ", ")
+			}
+			fmt.Fprintf(os.Stderr, "%s", name)
+			first = false
+		}
+		fmt.Fprintf(os.Stderr, "\n")
+		os.Exit(1)
+	}
+
+	// Create task source with priority: --tasks > --change > default
+	var taskSource tasks.TaskSource
+	if tasksPath != "" {
+		// Use explicit --tasks path (highest priority)
+		ts, err := tasks.NewJSONTaskSourceWithPath(tasksPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		taskSource = ts
+	} else if changeName != "" {
+		// Use change-specific tasks.json
+		changeTasksPath := filepath.Join(projectRoot, "openspec", "changes", changeName, "tasks.json")
+		ts, err := tasks.NewJSONTaskSourceWithPath(changeTasksPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		taskSource = ts
+	} else {
+		// Default task source
+		ts, err := tasks.NewJSONTaskSource(projectRoot, cfg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		taskSource = ts
+	}
+
+	// Create agent from config
+	ag := agent.NewConfigurableAgent(agentConfig.Command, agentConfig.Env)
+
+	// Create event channel for driver-TUI communication
+	eventChan := make(chan interface{}, 100)
+
+	// Create driver with event channel
+	d := driver.NewDriver(ag, taskSource, cfg, projectRoot, eventChan)
+
+	// Configure driver with change name and worktree path
+	if changeName != "" {
+		d.SetChangeName(changeName)
+	}
+	if worktreePath != "" {
+		d.SetWorktreePath(worktreePath)
+	}
+
+	// Create context with signal handling for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Set up signal handler to cancel context
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start driver in goroutine
+	var driverStatus driver.RunStatus
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(eventChan) // Close event channel when driver exits
+		driverStatus = d.Run(ctx)
+	}()
+
+	// Create TUI model
+	model := tui.New(eventChan, cfg, projectRoot)
+
+	// Run bubbletea program as main event loop
+	program := tea.NewProgram(model, tea.WithAltScreen())
+	finalModel, err := program.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
+		cancel() // Cancel driver context
+		wg.Wait()
+		os.Exit(1)
+	}
+
+	// When TUI exits, cancel driver context to stop gracefully
+	cancel()
+
+	// Wait for driver goroutine to finish
+	wg.Wait()
+
+	// Get final status from TUI model if available, otherwise use driver status
+	var finalStatus driver.RunStatus
+	if _, ok := finalModel.(*tui.Model); ok {
+		// TUI model may have captured the final status from RunCompleteMsg
+		// For now, we use the driver status directly
+		finalStatus = driverStatus
+	} else {
+		finalStatus = driverStatus
+	}
+
+	// Map status to exit code
+	exitCode := mapStatusToExitCode(finalStatus)
+	os.Exit(exitCode)
+}
+
+// mapStatusToExitCode converts a RunStatus to an appropriate exit code.
+// - 0: success (completed)
+// - 130: interrupted (SIGINT/cancelled)
+// - 1: error/failed
+func mapStatusToExitCode(status driver.RunStatus) int {
+	switch status {
+	case driver.RunStatusCompleted:
+		return 0
+	case driver.RunStatusCancelled:
+		return 130
+	default:
+		return 1
+	}
+}

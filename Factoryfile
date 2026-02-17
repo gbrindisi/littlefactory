@@ -1,0 +1,13 @@
+max_iterations: 10
+timeout: 600
+default_agent: claude
+worktrees_dir: .git/worktrees/
+
+agents:
+  claude:
+    command: "claude --dangerously-skip-permissions --print"
+  ab:
+    command: "agent-box run -- "
+    env:
+      ANTHROPIC_API_KEY:
+        shell: "security find-generic-password -w -s \"Claude Code\""

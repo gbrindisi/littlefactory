@@ -1,0 +1,6 @@
+.littlefactory/run_metadata.json
+test-environment/
+bin/
+.littlefactory/tasks.json
+coverage.out
+.claude/*.local.json

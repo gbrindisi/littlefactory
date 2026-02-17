@@ -1,0 +1,12 @@
+{
+  "tasks": [
+    {
+      "id": "change-name-xxx",
+      "title": "Section Title",
+      "description": "## Context\n2-5 sentences about what this section belongs to and why.\n\n## Scope\n- Bullet 1\n- Bullet 2\n- Bullet 3\n\n## OpenSpec checklist (reference)\n- [ ] N.1 Task description\n- [ ] N.2 Task description\n\nThe task list can be found at openspec/changes/<change-name>/tasks.md\n\n## Implementation plan (suggested chunks)\n1. First chunk of work\n2. Second chunk of work\n3. Third chunk of work\n\n## Acceptance criteria\n- Build passes\n- Tests pass\n- All checklist items above are implemented and verified\n- The task list at openspec/changes/<change-name>/tasks.md is updated\n\n## Key references\n- proposal.md (section: Why)\n- design.md (section: Decisions)\n- specs/<capability>/spec.md (section: Requirements)",
+      "status": "todo",
+      "labels": ["change-<change-name>", "section-label"],
+      "blockers": []
+    }
+  ]
+}

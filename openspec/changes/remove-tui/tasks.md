@@ -12,10 +12,10 @@
 
 ## 3. Add status line output to driver
 
-- [ ] 3.1 Add iteration start status line: `[N/MAX] Starting: <title> (<id>)` printed to stdout before agent execution
-- [ ] 3.2 Add iteration complete status line: `[N/MAX] Completed`, `[N/MAX] Failed: <error>`, or `[N/MAX] Timed out` after agent execution
-- [ ] 3.3 Add run summary line: `Run complete: <status> (N/MAX iterations)` or `Run cancelled` at end of run
-- [ ] 3.4 Add tests for status line output
+- [x] 3.1 Add iteration start status line: `[N/MAX] Starting: <title> (<id>)` printed to stdout before agent execution
+- [x] 3.2 Add iteration complete status line: `[N/MAX] Completed`, `[N/MAX] Failed: <error>`, or `[N/MAX] Timed out` after agent execution
+- [x] 3.3 Add run summary line: `Run complete: <status> (N/MAX iterations)` or `Run cancelled` at end of run
+- [x] 3.4 Add tests for status line output
 
 ## 4. Simplify main.go run command
 

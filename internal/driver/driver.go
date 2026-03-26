@@ -3,6 +3,8 @@ package driver
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -24,6 +26,7 @@ type Driver struct {
 	metadata     *RunMetadata
 	changeName   string
 	worktreePath string
+	statusOut    io.Writer
 }
 
 // NewDriver creates a new Driver with the given dependencies.
@@ -33,7 +36,14 @@ func NewDriver(ag agent.Agent, ts tasks.TaskSource, cfg *config.Config, projectR
 		taskSource:  ts,
 		config:      cfg,
 		projectRoot: projectRoot,
+		statusOut:   os.Stdout,
 	}
+}
+
+// SetStatusOutput sets the writer for status line output.
+// If not set, defaults to os.Stdout.
+func (d *Driver) SetStatusOutput(w io.Writer) {
+	d.statusOut = w
 }
 
 // SetChangeName sets the openspec change name for this run.
@@ -107,6 +117,8 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 	if len(readyTasks) == 0 {
 		d.metadata.Status = RunStatusCompleted
 		d.FinalizeRun()
+		_, _ = fmt.Fprintf(d.statusOut, "Run complete: %s (%d/%d iterations)\n",
+			d.metadata.Status, d.metadata.TotalIterations, d.metadata.MaxIterations)
 		return d.metadata.Status
 	}
 
@@ -139,6 +151,14 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 
 	// Finalize the run
 	d.FinalizeRun()
+
+	// Print run summary
+	if d.metadata.Status == RunStatusCancelled {
+		_, _ = fmt.Fprintln(d.statusOut, "Run cancelled")
+	} else {
+		_, _ = fmt.Fprintf(d.statusOut, "Run complete: %s (%d/%d iterations)\n",
+			d.metadata.Status, d.metadata.TotalIterations, d.metadata.MaxIterations)
+	}
 
 	return d.metadata.Status
 }
@@ -215,6 +235,9 @@ func (d *Driver) RunIteration(ctx context.Context, iterNum int) IterationStatus 
 
 	prompt := template.Render(tmpl, taskDetails)
 
+	// Print iteration start status line
+	_, _ = fmt.Fprintf(d.statusOut, "[%d/%d] Starting: %s (%s)\n", iterNum, d.config.MaxIterations, nextTask.Title, nextTask.ID)
+
 	// Create timeout context for this iteration
 	iterCtx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
 	defer cancel()
@@ -243,6 +266,22 @@ func (d *Driver) RunIteration(ctx context.Context, iterNum int) IterationStatus 
 		iter.Status = IterationStatusFailed
 	default:
 		iter.Status = IterationStatusCompleted
+	}
+
+	// Print iteration result status line
+	switch iter.Status {
+	case IterationStatusCompleted:
+		_, _ = fmt.Fprintf(d.statusOut, "[%d/%d] Completed\n", iterNum, d.config.MaxIterations)
+	case IterationStatusTimeout:
+		_, _ = fmt.Fprintf(d.statusOut, "[%d/%d] Timed out\n", iterNum, d.config.MaxIterations)
+	case IterationStatusFailed:
+		errMsg := "unknown error"
+		if iter.ErrorMessage != nil {
+			errMsg = *iter.ErrorMessage
+		} else if result.ExitCode != 0 {
+			errMsg = fmt.Sprintf("exit code %d", result.ExitCode)
+		}
+		_, _ = fmt.Fprintf(d.statusOut, "[%d/%d] Failed: %s\n", iterNum, d.config.MaxIterations, errMsg) // #nosec G705 -- errMsg is from internal error strings, not user input
 	}
 
 	// Update task state based on iteration result

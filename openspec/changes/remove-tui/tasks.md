@@ -19,9 +19,9 @@
 
 ## 4. Simplify main.go run command
 
-- [ ] 4.1 Remove bubbletea/TUI imports and event channel creation from `runRun`
-- [ ] 4.2 Replace TUI event loop with synchronous `d.Run(ctx)` call on main goroutine
-- [ ] 4.3 Wire signal handling (SIGINT/SIGTERM) to cancel context directly
+- [x] 4.1 Remove bubbletea/TUI imports and event channel creation from `runRun`
+- [x] 4.2 Replace TUI event loop with synchronous `d.Run(ctx)` call on main goroutine
+- [x] 4.3 Wire signal handling (SIGINT/SIGTERM) to cancel context directly
 
 ## 5. Remove dependencies
 

@@ -4,3 +4,4 @@ bin/
 .littlefactory/tasks.json
 coverage.out
 .claude/*.local.json
+openspec/

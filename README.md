@@ -12,7 +12,7 @@ littlefactory coordinates autonomous agent execution in a sequential loop:
 4. Tracks iteration metadata (timing, output, status)
 5. Repeats until all tasks complete or max iterations reached
 
-It supports multiple agent backends, git worktree isolation, OpenSpec-based change management, and a TUI for real-time progress monitoring.
+It supports multiple agent backends, git worktree isolation, and OpenSpec-based change management.
 
 ## Requirements
 
@@ -24,15 +24,16 @@ It supports multiple agent backends, git worktree isolation, OpenSpec-based chan
 ### From source
 
 ```bash
-go install github.com/yourusername/littlefactory/cmd/littlefactory@latest
+go install github.com/gbrindisi/littlefactory/cmd/littlefactory@latest
 ```
 
 ### Build locally
 
 ```bash
-git clone https://github.com/yourusername/littlefactory.git
+git clone https://github.com/gbrindisi/littlefactory.git
 cd littlefactory
-go build -o littlefactory ./cmd/littlefactory
+make build
+make install
 ```
 
 ## Quick Start
@@ -156,31 +157,6 @@ littlefactory run -t path/to/tasks.json
 
 # Override iteration limits
 littlefactory run --max-iterations 20 --timeout 300
-```
-
-### `littlefactory status`
-
-Show task progress for the current directory, a specific change, or all worktrees.
-
-```bash
-littlefactory status [flags]
-```
-
-**Flags:**
-
-| Flag | Description |
-|------|-------------|
-| `-c, --change` | Show status for a specific OpenSpec change |
-| `--all` | Show status for all worktrees |
-| `-v, --verbose` | Show detailed task list |
-
-**Examples:**
-
-```bash
-littlefactory status
-littlefactory status -c feature-a
-littlefactory status --all
-littlefactory status -c feature-a -v
 ```
 
 ### `littlefactory upgrade`

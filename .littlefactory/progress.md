@@ -2052,3 +2052,121 @@ Started: 2026-01-30T22:38:25.410114
   - The `--change` flag reads tasks.json directly from the change directory, so the `.littlefactory/tasks.json` copy was redundant
 ---
 
+
+## [2026-03-26] - remove-tui-t1a
+- Deleted entire internal/tui/ directory (9 files: tui.go, tui_test.go, tasks_panel.go, tasks_panel_test.go, output_panel.go, status_bar.go, status_bar_test.go, styles.go, styles_test.go)
+- Removed tui and bubbletea imports from cmd/littlefactory/main.go
+- Replaced TUI event loop with synchronous driver.Run() call and signal-based context cancellation
+- go mod tidy removed 21 lines from go.mod and 47 lines from go.sum (bubbletea, bubbles, lipgloss, fsnotify and transitive deps)
+- Marked task 1.1 as complete in openspec/changes/remove-tui/tasks.md
+- Files changed: internal/tui/ (deleted), cmd/littlefactory/main.go, go.mod, go.sum, openspec/changes/remove-tui/tasks.md
+- **Learnings for future iterations:**
+  - Removing a package that main.go imports requires patching main.go to keep the build passing, even if main.go changes are scoped to a later task
+  - Pre-commit hook runs go mod tidy automatically; when removing packages, expect go.mod/go.sum changes on first commit attempt
+  - The event channel pattern (driver -> TUI) can be replaced with a simple drain goroutine when the consumer is removed
+  - Signal handling was previously indirect through bubbletea; direct signal->cancel pattern is simpler
+---
+## Iteration 1
+
+- **Task:** remove-tui-t1a
+- **Status:** completed
+
+---
+
+
+## [2026-03-26] - remove-tui-e2b
+- Deleted internal/driver/events.go (all event message types: RunStartedMsg, IterationStartedMsg, OutputMsg, IterationCompleteMsg, TasksRefreshedMsg, RunCompleteMsg, outputWriter)
+- Removed eventChan field, emit() method from Driver struct
+- Simplified NewDriver to 4 parameters (agent, taskSource, config, projectRoot)
+- Removed all d.emit() calls from Run() and RunIteration()
+- Replaced TUI output writer branch with direct os.Stdout write
+- Removed event channel creation and drain goroutine from cmd/littlefactory/main.go
+- Updated all 12 NewDriver calls in driver_test.go to use 4-parameter signature
+- Removed unused "io" import from driver.go
+- All 12 packages pass tests, go vet clean, all pre-commit hooks pass
+- Files changed: internal/driver/events.go (deleted), internal/driver/driver.go, internal/driver/driver_test.go, cmd/littlefactory/main.go, openspec/changes/remove-tui/tasks.md
+- **Learnings for future iterations:**
+  - The event channel was only consumed by the TUI; with TUI removed in task 1, the drain goroutine in main.go was the only remaining consumer
+  - When removing an event system, trace both producers (d.emit calls) and consumers (eventChan readers) to ensure complete removal
+  - The outputWriter in events.go was an io.Writer adapter for the event channel; removing it means agent output goes directly to os.Stdout
+---
+## Iteration 2
+
+- **Task:** remove-tui-e2b
+- **Status:** completed
+
+---
+## Iteration 2
+
+- **Task:** remove-tui-e2b
+- **Status:** completed
+
+---
+
+
+## [2026-03-26] - remove-tui-s3c
+- Added status line output to the driver for iteration progress visibility
+- Added `statusOut` io.Writer field to Driver struct (defaults to os.Stdout) with `SetStatusOutput()` setter for testability
+- Iteration start prints `[N/MAX] Starting: <title> (<id>)` before agent execution
+- Iteration result prints `[N/MAX] Completed`, `[N/MAX] Failed: <error>`, or `[N/MAX] Timed out` after agent execution
+- Run summary prints `Run complete: <status> (N/MAX iterations)` or `Run cancelled` at end of run
+- Added 8 tests in `status_lines_test.go` covering all status line formats
+- Marked checklist items 3.1-3.4 as done in tasks.md
+- Files changed: internal/driver/driver.go, internal/driver/status_lines_test.go, openspec/changes/remove-tui/tasks.md
+- **Learnings for future iterations:**
+  - Pre-commit hooks enforce errcheck: all fmt.Fprintf calls must use `_, _ =` to discard return values
+  - Pre-commit hooks enforce gosec: fmt.Fprintf with string args from error messages triggers G705 (XSS taint); use `#nosec G705` comment when the input is internal
+  - The `SetStatusOutput` pattern (io.Writer injection) allows tests to capture status output via `bytes.Buffer` without touching os.Stdout
+  - Status lines are separate from agent output (which goes directly to os.Stdout via agent.Run)
+---
+## Iteration 3
+
+- **Task:** remove-tui-s3c
+- **Status:** completed
+
+---
+
+
+
+## [2026-03-26] - remove-tui-m4d
+- Verified main.go already has all required simplifications from prior tasks (t1a removed TUI imports, e2b removed event channel)
+- Confirmed: no bubbletea/TUI imports, d.Run(ctx) called synchronously, SIGINT/SIGTERM wired to cancel context directly
+- Marked checklist items 4.1-4.3 as done in tasks.md
+- Build and all 12 packages pass tests
+- Files changed: openspec/changes/remove-tui/tasks.md
+- **Learnings for future iterations:**
+  - When earlier tasks in a sequence modify shared files (main.go), later tasks scoped to those same files may already be complete -- verify before writing code
+  - The pre-commit hook stashes unstaged changes automatically and restores them after the commit
+---
+## Iteration 4
+
+- **Task:** remove-tui-m4d
+- **Status:** completed
+
+---
+
+
+
+## [2026-03-26] - remove-tui-d5e
+- Verified bubbletea, bubbles, lipgloss, and fsnotify already removed from go.mod (cleaned during task t1a)
+- Confirmed go build ./... succeeds with no errors
+- Confirmed all 12 packages pass tests
+- Marked checklist items 5.1-5.2 as done in tasks.md
+- Files changed: openspec/changes/remove-tui/tasks.md
+- **Learnings for future iterations:**
+  - When earlier tasks in a sequence run go mod tidy as part of their commit (pre-commit hook forces it), later dependency-cleanup tasks may already be complete -- verify before running redundant commands
+  - The pre-commit hook runs go-mod-tidy automatically, so dependencies get cleaned on any commit that touches Go files
+---
+## Iteration 5
+
+- **Task:** remove-tui-d5e
+- **Status:** completed
+
+---
+## Iteration 5
+
+- **Task:** remove-tui-d5e
+- **Status:** completed
+
+---
+

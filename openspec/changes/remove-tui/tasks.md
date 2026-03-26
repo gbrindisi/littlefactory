@@ -25,5 +25,5 @@
 
 ## 5. Remove dependencies
 
-- [ ] 5.1 Run `go mod tidy` to remove bubbletea, bubbles, lipgloss, fsnotify and transitive deps
-- [ ] 5.2 Verify build and tests pass
+- [x] 5.1 Run `go mod tidy` to remove bubbletea, bubbles, lipgloss, fsnotify and transitive deps
+- [x] 5.2 Verify build and tests pass

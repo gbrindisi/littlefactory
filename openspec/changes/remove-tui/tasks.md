@@ -4,11 +4,11 @@
 
 ## 2. Remove driver event system
 
-- [ ] 2.1 Delete `internal/driver/events.go` (all event message types)
-- [ ] 2.2 Remove `eventChan` field, `emit()` method, and `newOutputWriter` from `internal/driver/driver.go`
-- [ ] 2.3 Remove event channel parameter from `NewDriver` constructor
-- [ ] 2.4 Remove all `d.emit(...)` calls from `Run()` and `RunIteration()`
-- [ ] 2.5 Update driver tests to remove event channel references and mocks
+- [x] 2.1 Delete `internal/driver/events.go` (all event message types)
+- [x] 2.2 Remove `eventChan` field, `emit()` method, and `newOutputWriter` from `internal/driver/driver.go`
+- [x] 2.3 Remove event channel parameter from `NewDriver` constructor
+- [x] 2.4 Remove all `d.emit(...)` calls from `Run()` and `RunIteration()`
+- [x] 2.5 Update driver tests to remove event channel references and mocks
 
 ## 3. Add status line output to driver
 

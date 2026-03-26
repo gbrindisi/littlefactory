@@ -310,11 +310,8 @@ func runRun(cmd *cobra.Command, args []string) {
 	// Create agent from config
 	ag := agent.NewConfigurableAgent(agentConfig.Command, agentConfig.Env)
 
-	// Create event channel for driver communication
-	eventChan := make(chan interface{}, 100)
-
-	// Create driver with event channel
-	d := driver.NewDriver(ag, taskSource, cfg, projectRoot, eventChan)
+	// Create driver
+	d := driver.NewDriver(ag, taskSource, cfg, projectRoot)
 
 	// Configure driver with change name and worktree path
 	if changeName != "" {
@@ -334,12 +331,6 @@ func runRun(cmd *cobra.Command, args []string) {
 	go func() {
 		<-sigChan
 		cancel()
-	}()
-
-	// Drain event channel in background (until driver closes it)
-	go func() {
-		for range eventChan {
-		}
 	}()
 
 	// Run driver synchronously

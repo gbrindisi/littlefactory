@@ -21,7 +21,7 @@ func TestNewDriver(t *testing.T) {
 	ts := &MockTaskSource{}
 	cfg := &config.Config{MaxIterations: 5, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, "/test/project", nil)
+	d := NewDriver(ag, ts, cfg, "/test/project")
 
 	if d.agent != ag {
 		t.Error("agent not set correctly")
@@ -84,7 +84,7 @@ func TestRunIteration_Success(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -123,7 +123,7 @@ func TestRunIteration_AgentFailure(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -146,7 +146,7 @@ func TestRunIteration_NoReadyTasks(t *testing.T) {
 	ts := &MockTaskSource{ReadyTasks: []tasks.Task{}}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -172,7 +172,7 @@ func TestRunIteration_TaskSourceError(t *testing.T) {
 	ts := &MockTaskSource{ReadyErr: errors.New("task source error")}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -203,7 +203,7 @@ func TestRunIteration_Timeout(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 1} // 1 second timeout
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -271,7 +271,7 @@ func TestRun_CompletesWhenNoTasks(t *testing.T) {
 	ts := &MockTaskSource{ReadyTasks: []tasks.Task{}} // No tasks
 	cfg := &config.Config{MaxIterations: 10, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 
 	status := d.Run(context.Background())
 
@@ -292,7 +292,7 @@ func TestRun_ContextCancellation(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 10, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 
 	// Create a cancelled context
 	ctx, cancel := context.WithCancel(context.Background())
@@ -334,7 +334,7 @@ func TestRunIteration_AgentError(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 	d.metadata = &RunMetadata{
 		RunID:      "test-run",
 		StartedAt:  time.Now(),
@@ -377,7 +377,7 @@ func TestRun_KeepGoingOnFailure(t *testing.T) {
 
 	cfg := &config.Config{MaxIterations: 2, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, tmpDir, nil)
+	d := NewDriver(ag, ts, cfg, tmpDir)
 
 	status := d.Run(context.Background())
 
@@ -454,7 +454,7 @@ func TestRun_WorktreePathSwitchesDirectory(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, projectDir, nil)
+	d := NewDriver(ag, ts, cfg, projectDir)
 	d.SetWorktreePath(worktreeDir)
 
 	d.Run(context.Background())
@@ -485,7 +485,7 @@ func TestRun_WorktreePathInvalidFails(t *testing.T) {
 	}
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, projectDir, nil)
+	d := NewDriver(ag, ts, cfg, projectDir)
 	d.SetWorktreePath("/nonexistent/path/that/does/not/exist")
 
 	status := d.Run(context.Background())
@@ -508,7 +508,7 @@ func TestRun_NoWorktreePathPreservesDirectory(t *testing.T) {
 	ts := &MockTaskSource{ReadyTasks: []tasks.Task{}} // No tasks, exits early
 	cfg := &config.Config{MaxIterations: 1, Timeout: 60}
 
-	d := NewDriver(ag, ts, cfg, projectDir, nil)
+	d := NewDriver(ag, ts, cfg, projectDir)
 	// No worktree path set
 
 	d.Run(context.Background())

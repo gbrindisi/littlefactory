@@ -3,7 +3,6 @@ package driver
 
 import (
 	"context"
-	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -23,21 +22,17 @@ type Driver struct {
 	config       *config.Config
 	projectRoot  string
 	metadata     *RunMetadata
-	eventChan    chan interface{}
 	changeName   string
 	worktreePath string
 }
 
 // NewDriver creates a new Driver with the given dependencies.
-// The eventChan parameter is used to send events to the TUI.
-// If eventChan is nil, events are not emitted (for backward compatibility).
-func NewDriver(ag agent.Agent, ts tasks.TaskSource, cfg *config.Config, projectRoot string, eventChan chan interface{}) *Driver {
+func NewDriver(ag agent.Agent, ts tasks.TaskSource, cfg *config.Config, projectRoot string) *Driver {
 	return &Driver{
 		agent:       ag,
 		taskSource:  ts,
 		config:      cfg,
 		projectRoot: projectRoot,
-		eventChan:   eventChan,
 	}
 }
 
@@ -73,14 +68,6 @@ func (d *Driver) effectiveRoot() string {
 	return d.projectRoot
 }
 
-// emit sends an event to the event channel if it exists.
-// This is a helper to safely emit events without checking for nil everywhere.
-func (d *Driver) emit(event interface{}) {
-	if d.eventChan != nil {
-		d.eventChan <- event
-	}
-}
-
 // Run executes the main agent loop up to maxIterations.
 // It returns the final RunStatus when the run completes.
 // If WorktreePath is set, the process working directory is changed
@@ -113,18 +100,8 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 	// Save initial metadata
 	_ = SaveMetadata(d.effectiveRoot(), d.config, d.metadata)
 
-	// Get initial ready task count and emit start event
+	// Get initial ready task count
 	readyTasks, _ := d.taskSource.Ready()
-	d.emit(RunStartedMsg{
-		MaxIterations: d.config.MaxIterations,
-		ReadyCount:    len(readyTasks),
-	})
-
-	// Emit initial task list for TUI
-	allTasks, err := d.taskSource.List()
-	if err == nil {
-		d.emit(TasksRefreshedMsg{Tasks: allTasks})
-	}
 
 	// Exit early if no ready tasks at start
 	if len(readyTasks) == 0 {
@@ -162,12 +139,6 @@ func (d *Driver) Run(ctx context.Context) RunStatus {
 
 	// Finalize the run
 	d.FinalizeRun()
-
-	// Emit run complete event
-	d.emit(RunCompleteMsg{
-		Status:   d.metadata.Status,
-		Metadata: d.metadata,
-	})
 
 	return d.metadata.Status
 }
@@ -216,13 +187,6 @@ func (d *Driver) RunIteration(ctx context.Context, iterNum int) IterationStatus 
 	iter.TaskID = ptr(nextTask.ID)
 	iter.TaskTitle = ptr(nextTask.Title)
 
-	// Emit iteration started event
-	d.emit(IterationStartedMsg{
-		Iteration: iterNum,
-		TaskID:    nextTask.ID,
-		TaskTitle: nextTask.Title,
-	})
-
 	// Claim the task (mark as in_progress)
 	if err := d.taskSource.Claim(nextTask.ID); err != nil {
 		iter.Status = IterationStatusFailed
@@ -255,19 +219,8 @@ func (d *Driver) RunIteration(ctx context.Context, iterNum int) IterationStatus 
 	iterCtx, cancel := context.WithTimeout(ctx, time.Duration(d.config.Timeout)*time.Second)
 	defer cancel()
 
-	// Create output writer that emits events
-	var outputDest io.Writer
-	if d.eventChan != nil {
-		// TUI mode: only emit to event channel (stdout corrupts alternate screen)
-		outputDest = newOutputWriter(d.eventChan)
-	} else {
-		// Non-TUI mode: write directly to stdout
-		outputDest = os.Stdout
-	}
-
-	// Execute the agent
-	// Output is streamed in real-time via io.Writer
-	result, err := d.agent.Run(iterCtx, prompt, outputDest)
+	// Execute the agent with output streamed to stdout
+	result, err := d.agent.Run(iterCtx, prompt, os.Stdout)
 
 	// Record output metrics
 	iter.OutputLines = ptr(result.OutputLines)
@@ -301,21 +254,12 @@ func (d *Driver) RunIteration(ctx context.Context, iterNum int) IterationStatus 
 		_ = d.taskSource.Reset(nextTask.ID)
 	}
 
-	// Emit iteration complete event
-	d.emit(IterationCompleteMsg{Status: iter.Status})
-
 	// Finalize iteration
 	d.finalizeIteration(&iter)
 
 	// Append to progress file
 	statusStr := string(iter.Status)
 	_ = AppendSessionToProgress(d.effectiveRoot(), d.config, iterNum, *iter.TaskID, statusStr)
-
-	// Emit tasks refreshed event with updated task list
-	allTasks, err := d.taskSource.List()
-	if err == nil {
-		d.emit(TasksRefreshedMsg{Tasks: allTasks})
-	}
 
 	return iter.Status
 }

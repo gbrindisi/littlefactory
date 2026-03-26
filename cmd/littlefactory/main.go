@@ -6,16 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"sync"
 	"syscall"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gbrindisi/littlefactory/internal/agent"
 	"github.com/gbrindisi/littlefactory/internal/config"
 	"github.com/gbrindisi/littlefactory/internal/driver"
 	lfinit "github.com/gbrindisi/littlefactory/internal/init"
 	"github.com/gbrindisi/littlefactory/internal/tasks"
-	"github.com/gbrindisi/littlefactory/internal/tui"
 	"github.com/gbrindisi/littlefactory/internal/worktree"
 	"github.com/spf13/cobra"
 )
@@ -313,7 +310,7 @@ func runRun(cmd *cobra.Command, args []string) {
 	// Create agent from config
 	ag := agent.NewConfigurableAgent(agentConfig.Command, agentConfig.Env)
 
-	// Create event channel for driver-TUI communication
+	// Create event channel for driver communication
 	eventChan := make(chan interface{}, 100)
 
 	// Create driver with event channel
@@ -329,52 +326,27 @@ func runRun(cmd *cobra.Command, args []string) {
 
 	// Create context with signal handling for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Set up signal handler to cancel context
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	// Start driver in goroutine
-	var driverStatus driver.RunStatus
-	var wg sync.WaitGroup
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		defer close(eventChan) // Close event channel when driver exits
-		driverStatus = d.Run(ctx)
+		<-sigChan
+		cancel()
 	}()
 
-	// Create TUI model
-	model := tui.New(eventChan, cfg, projectRoot)
+	// Drain event channel in background (until driver closes it)
+	go func() {
+		for range eventChan {
+		}
+	}()
 
-	// Run bubbletea program as main event loop
-	program := tea.NewProgram(model, tea.WithAltScreen())
-	finalModel, err := program.Run()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
-		cancel() // Cancel driver context
-		wg.Wait()
-		os.Exit(1)
-	}
-
-	// When TUI exits, cancel driver context to stop gracefully
-	cancel()
-
-	// Wait for driver goroutine to finish
-	wg.Wait()
-
-	// Get final status from TUI model if available, otherwise use driver status
-	var finalStatus driver.RunStatus
-	if _, ok := finalModel.(*tui.Model); ok {
-		// TUI model may have captured the final status from RunCompleteMsg
-		// For now, we use the driver status directly
-		finalStatus = driverStatus
-	} else {
-		finalStatus = driverStatus
-	}
+	// Run driver synchronously
+	status := d.Run(ctx)
 
 	// Map status to exit code
-	exitCode := mapStatusToExitCode(finalStatus)
+	exitCode := mapStatusToExitCode(status)
 	os.Exit(exitCode)
 }
 

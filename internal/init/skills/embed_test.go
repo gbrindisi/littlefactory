@@ -52,6 +52,16 @@ func TestExtractSkills(t *testing.T) {
 	if _, err := os.Stat(doSkillFile); err != nil {
 		t.Fatalf("expected lf-do/SKILL.md to exist: %v", err)
 	}
+
+	// Verify lf-verify skill was extracted
+	verifyDir := filepath.Join(skillsDir, "lf-verify")
+	if _, err := os.Stat(verifyDir); err != nil {
+		t.Fatalf("expected lf-verify skill directory to exist: %v", err)
+	}
+	verifySkillFile := filepath.Join(verifyDir, "SKILL.md")
+	if _, err := os.Stat(verifySkillFile); err != nil {
+		t.Fatalf("expected lf-verify/SKILL.md to exist: %v", err)
+	}
 }
 
 func TestExtractSkillsIdempotent(t *testing.T) {

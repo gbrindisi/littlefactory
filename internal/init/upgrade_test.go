@@ -198,8 +198,8 @@ func TestUpgrade_WithClaudeDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read .claude/skills/: %v", err)
 	}
-	if len(entries) != 3 {
-		t.Errorf("expected 3 skill symlinks (lf-do, lf-explore, lf-formalize), got %d", len(entries))
+	if len(entries) != 4 {
+		t.Errorf("expected 4 skill symlinks (lf-do, lf-explore, lf-formalize, lf-verify), got %d", len(entries))
 	}
 }
 

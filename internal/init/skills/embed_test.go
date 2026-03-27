@@ -32,6 +32,16 @@ func TestExtractSkills(t *testing.T) {
 	if _, err := os.Stat(skillFile); err != nil {
 		t.Fatalf("expected lf-explore/SKILL.md to exist: %v", err)
 	}
+
+	// Verify lf-formalize skill was extracted
+	formalizeDir := filepath.Join(skillsDir, "lf-formalize")
+	if _, err := os.Stat(formalizeDir); err != nil {
+		t.Fatalf("expected lf-formalize skill directory to exist: %v", err)
+	}
+	formalizeSkillFile := filepath.Join(formalizeDir, "SKILL.md")
+	if _, err := os.Stat(formalizeSkillFile); err != nil {
+		t.Fatalf("expected lf-formalize/SKILL.md to exist: %v", err)
+	}
 }
 
 func TestExtractSkillsIdempotent(t *testing.T) {

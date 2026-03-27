@@ -4,18 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/gbrindisi/littlefactory/internal/init/openspec"
 )
 
 // Upgrade applies littlefactory configuration improvements to an existing project.
 // It requires a Factoryfile to exist and idempotently sets up AGENTS.md,
 // .gitignore entries, skills, and OpenSpec configuration.
 func Upgrade(projectRoot string) error {
-	if err := openspec.CheckInstalled(); err != nil {
-		return err
-	}
-
 	factoryfilePath := filepath.Join(projectRoot, "Factoryfile")
 	factoryfileYAMLPath := filepath.Join(projectRoot, "Factoryfile.yaml")
 
@@ -40,7 +34,7 @@ func Upgrade(projectRoot string) error {
 		return err
 	}
 
-	if err := setupOpenSpec(log, projectRoot); err != nil {
+	if err := setupChangesDir(log, projectRoot); err != nil {
 		return err
 	}
 

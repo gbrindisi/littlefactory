@@ -7,34 +7,7 @@ import (
 	"testing"
 )
 
-func TestUpgrade_FailsIfOpenspecNotInstalled(t *testing.T) {
-	dir := t.TempDir()
-
-	// Create Factoryfile so we get past that check.
-	if err := os.WriteFile(filepath.Join(dir, "Factoryfile"), []byte(DefaultFactoryfile), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	// Set PATH to an empty directory so openspec cannot be found.
-	emptyDir := t.TempDir()
-	t.Setenv("PATH", emptyDir)
-
-	err := Upgrade(dir)
-	if err == nil {
-		t.Fatal("expected Upgrade to fail when openspec is not in PATH")
-	}
-	if !strings.Contains(err.Error(), "openspec is not installed") {
-		t.Errorf("expected 'openspec is not installed' error, got: %v", err)
-	}
-
-	// Verify no new files were created (Factoryfile was pre-existing).
-	if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); err == nil {
-		t.Error("AGENTS.md should not have been created when openspec check fails")
-	}
-}
-
 func TestUpgrade_FailsWithoutFactoryfile(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	err := Upgrade(dir)
@@ -47,7 +20,6 @@ func TestUpgrade_FailsWithoutFactoryfile(t *testing.T) {
 }
 
 func TestUpgrade_WithFactoryfile(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile (required for upgrade)
@@ -89,25 +61,14 @@ func TestUpgrade_WithFactoryfile(t *testing.T) {
 		t.Error(".gitignore missing .littlefactory/tasks.json")
 	}
 
-	// Verify OpenSpec schema was extracted
-	schemaDir := filepath.Join(dir, "openspec", "schemas", "littlefactory")
-	if _, err := os.Stat(schemaDir); err != nil {
-		t.Fatalf("expected openspec schema directory to exist: %v", err)
-	}
-
-	// Verify OpenSpec config was created
-	configPath := filepath.Join(dir, "openspec", "config.yaml")
-	configContent, err := os.ReadFile(configPath)
-	if err != nil {
-		t.Fatalf("expected openspec config to exist: %v", err)
-	}
-	if string(configContent) != "schema: littlefactory\n" {
-		t.Errorf("expected default openspec config, got: %s", string(configContent))
+	// Verify changes directory was created
+	changesDir := filepath.Join(dir, ".littlefactory", "changes")
+	if _, err := os.Stat(changesDir); err != nil {
+		t.Fatalf("expected .littlefactory/changes/ to exist: %v", err)
 	}
 }
 
 func TestUpgrade_WithFactoryfileYAML(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile.yaml (alternate name)
@@ -130,7 +91,6 @@ func TestUpgrade_WithFactoryfileYAML(t *testing.T) {
 }
 
 func TestUpgrade_Idempotent(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile
@@ -178,7 +138,6 @@ func TestUpgrade_Idempotent(t *testing.T) {
 }
 
 func TestUpgrade_WithExistingClaudeMD(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile
@@ -219,7 +178,6 @@ func TestUpgrade_WithExistingClaudeMD(t *testing.T) {
 }
 
 func TestUpgrade_WithClaudeDir(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile and .claude/ directory
@@ -248,7 +206,6 @@ func TestUpgrade_WithClaudeDir(t *testing.T) {
 }
 
 func TestUpgrade_DoesNotCreateFactoryfile(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create Factoryfile with custom content

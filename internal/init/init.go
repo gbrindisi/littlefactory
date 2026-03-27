@@ -9,7 +9,6 @@ import (
 
 	"github.com/gbrindisi/littlefactory/internal/init/agentsmd"
 	"github.com/gbrindisi/littlefactory/internal/init/gitignore"
-	"github.com/gbrindisi/littlefactory/internal/init/openspec"
 	"github.com/gbrindisi/littlefactory/internal/init/skills"
 )
 
@@ -53,10 +52,6 @@ func (l *logger) SubOp(msg string) {
 // It creates the Factoryfile, sets up AGENTS.md, updates .gitignore,
 // and installs skills. Each step is logged with numbered progress output.
 func Run(projectRoot string) error {
-	if err := openspec.CheckInstalled(); err != nil {
-		return err
-	}
-
 	log := newLogger(5)
 
 	if err := createFactoryfile(log, projectRoot); err != nil {
@@ -75,7 +70,7 @@ func Run(projectRoot string) error {
 		return err
 	}
 
-	if err := setupOpenSpec(log, projectRoot); err != nil {
+	if err := setupChangesDir(log, projectRoot); err != nil {
 		return err
 	}
 
@@ -179,20 +174,14 @@ func installSkills(log *logger, projectRoot string) error {
 	return nil
 }
 
-func setupOpenSpec(log *logger, projectRoot string) error {
-	log.Step("Setting up OpenSpec")
+func setupChangesDir(log *logger, projectRoot string) error {
+	log.Step("Creating changes directory")
 
-	result, err := openspec.Setup(projectRoot)
-	if err != nil {
-		return fmt.Errorf("setting up openspec: %w", err)
+	changesDir := filepath.Join(projectRoot, ".littlefactory", "changes")
+	if err := os.MkdirAll(changesDir, 0o755); err != nil {
+		return fmt.Errorf("creating changes directory: %w", err)
 	}
 
-	log.SubOp("Extracted schema to openspec/schemas/littlefactory/")
-	if result.ConfigCreated {
-		log.SubOp("Created openspec/config.yaml")
-	} else {
-		log.SubOp("Config openspec/config.yaml already exists (preserved)")
-	}
-
+	log.SubOp("Created .littlefactory/changes/")
 	return nil
 }

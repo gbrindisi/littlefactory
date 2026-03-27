@@ -2,22 +2,12 @@ package init
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// requireOpenSpec skips the test if the openspec binary is not in PATH.
-func requireOpenSpec(t *testing.T) {
-	t.Helper()
-	if _, err := exec.LookPath("openspec"); err != nil {
-		t.Skip("openspec not in PATH, skipping")
-	}
-}
-
 func TestRun_EmptyDirectory(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	if err := Run(dir); err != nil {
@@ -63,25 +53,14 @@ func TestRun_EmptyDirectory(t *testing.T) {
 		t.Error(".gitignore missing .littlefactory/tasks.json")
 	}
 
-	// Verify OpenSpec schema was extracted
-	schemaDir := filepath.Join(dir, "openspec", "schemas", "littlefactory")
-	if _, err := os.Stat(schemaDir); err != nil {
-		t.Fatalf("expected openspec schema directory to exist: %v", err)
-	}
-
-	// Verify OpenSpec config was created
-	configPath := filepath.Join(dir, "openspec", "config.yaml")
-	configContent, err := os.ReadFile(configPath)
-	if err != nil {
-		t.Fatalf("expected openspec config to exist: %v", err)
-	}
-	if string(configContent) != "schema: littlefactory\n" {
-		t.Errorf("expected default openspec config, got: %s", string(configContent))
+	// Verify changes directory was created
+	changesDir := filepath.Join(dir, ".littlefactory", "changes")
+	if _, err := os.Stat(changesDir); err != nil {
+		t.Fatalf("expected .littlefactory/changes/ to exist: %v", err)
 	}
 }
 
 func TestRun_WithExistingClaudeMD(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create existing CLAUDE.md
@@ -116,7 +95,6 @@ func TestRun_WithExistingClaudeMD(t *testing.T) {
 }
 
 func TestRun_FailsIfFactoryfileExists(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create existing Factoryfile
@@ -135,7 +113,6 @@ func TestRun_FailsIfFactoryfileExists(t *testing.T) {
 }
 
 func TestRun_FailsIfFactoryfileYAMLExists(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create existing Factoryfile.yaml
@@ -154,7 +131,6 @@ func TestRun_FailsIfFactoryfileYAMLExists(t *testing.T) {
 }
 
 func TestRun_WithExistingGitignore(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// Create existing .gitignore with custom content
@@ -184,32 +160,7 @@ func TestRun_WithExistingGitignore(t *testing.T) {
 	}
 }
 
-func TestRun_FailsIfOpenspecNotInstalled(t *testing.T) {
-	dir := t.TempDir()
-
-	// Set PATH to an empty directory so openspec cannot be found.
-	emptyDir := t.TempDir()
-	t.Setenv("PATH", emptyDir)
-
-	err := Run(dir)
-	if err == nil {
-		t.Fatal("expected Run to fail when openspec is not in PATH")
-	}
-	if !strings.Contains(err.Error(), "openspec is not installed") {
-		t.Errorf("expected 'openspec is not installed' error, got: %v", err)
-	}
-
-	// Verify no files were created.
-	if _, err := os.Stat(filepath.Join(dir, "Factoryfile")); err == nil {
-		t.Error("Factoryfile should not have been created when openspec check fails")
-	}
-	if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); err == nil {
-		t.Error("AGENTS.md should not have been created when openspec check fails")
-	}
-}
-
 func TestRun_WithoutClaudeDir_SkipsSymlinks(t *testing.T) {
-	requireOpenSpec(t)
 	dir := t.TempDir()
 
 	// No .claude/ directory exists

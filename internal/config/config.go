@@ -66,6 +66,7 @@ type Config struct {
 	Timeout       int                    `yaml:"timeout"`
 	StateDir      string                 `yaml:"state_dir"`
 	WorktreesDir  string                 `yaml:"worktrees_dir"`
+	SpecsDir      string                 `yaml:"specs_dir"`
 	DefaultAgent  string                 `yaml:"default_agent"`
 	Agents        map[string]AgentConfig `yaml:"agents"`
 }

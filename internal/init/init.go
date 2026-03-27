@@ -154,6 +154,15 @@ func installSkills(log *logger, projectRoot string) error {
 	}
 	log.SubOp("Extracted embedded skills to .littlefactory/skills/")
 
+	// Clean up orphaned openspec-* symlinks from previous installations.
+	removed, err := skills.CleanupOrphanedSymlinks(projectRoot, "openspec-")
+	if err != nil {
+		return fmt.Errorf("cleaning up orphaned symlinks: %w", err)
+	}
+	for _, name := range removed {
+		log.SubOp(fmt.Sprintf("Removed orphaned .claude/skills/%s", name))
+	}
+
 	result, err := skills.CreateSymlinks(projectRoot)
 	if err != nil {
 		return fmt.Errorf("creating skill symlinks: %w", err)

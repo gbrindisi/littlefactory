@@ -117,6 +117,51 @@ func CreateSymlinks(projectRoot string) (SymlinkResult, error) {
 	return result, nil
 }
 
+// CleanupOrphanedSymlinks removes symlinks from .claude/skills/ whose names
+// match the given prefix but do not correspond to any skill in .littlefactory/skills/.
+// This is used during upgrade to remove stale openspec-* symlinks.
+func CleanupOrphanedSymlinks(projectRoot, prefix string) ([]string, error) {
+	claudeSkillsDir := filepath.Join(projectRoot, ".claude", "skills")
+	if !dirExists(claudeSkillsDir) {
+		return nil, nil
+	}
+
+	lfSkillsDir := filepath.Join(projectRoot, ".littlefactory", "skills")
+
+	entries, err := os.ReadDir(claudeSkillsDir)
+	if err != nil {
+		return nil, fmt.Errorf("reading .claude/skills/: %w", err)
+	}
+
+	var removed []string
+	for _, entry := range entries {
+		name := entry.Name()
+		if len(name) <= len(prefix) || name[:len(prefix)] != prefix {
+			continue
+		}
+
+		linkPath := filepath.Join(claudeSkillsDir, name)
+
+		// Only remove symlinks, not real directories/files.
+		fi, err := os.Lstat(linkPath)
+		if err != nil || fi.Mode()&os.ModeSymlink == 0 {
+			continue
+		}
+
+		// Keep if a corresponding skill exists in .littlefactory/skills/.
+		if dirExists(filepath.Join(lfSkillsDir, name)) {
+			continue
+		}
+
+		if err := os.Remove(linkPath); err != nil {
+			return removed, fmt.Errorf("removing orphaned symlink %s: %w", name, err)
+		}
+		removed = append(removed, name)
+	}
+
+	return removed, nil
+}
+
 // dirExists returns true if the path exists and is a directory.
 func dirExists(path string) bool {
 	info, err := os.Stat(path)

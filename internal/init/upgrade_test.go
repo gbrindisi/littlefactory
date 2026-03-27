@@ -203,6 +203,52 @@ func TestUpgrade_WithClaudeDir(t *testing.T) {
 	}
 }
 
+func TestUpgrade_CleansUpOrphanedOpenspecSymlinks(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create Factoryfile and .claude/ directory
+	if err := os.WriteFile(filepath.Join(dir, "Factoryfile"), []byte(DefaultFactoryfile), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	claudeSkills := filepath.Join(dir, ".claude", "skills")
+	if err := os.MkdirAll(claudeSkills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create orphaned openspec-* symlinks (simulating pre-upgrade state)
+	for _, name := range []string{"openspec-explore", "openspec-new-change", "openspec-verify-change"} {
+		if err := os.Symlink("/nonexistent", filepath.Join(claudeSkills, name)); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := Upgrade(dir); err != nil {
+		t.Fatalf("Upgrade failed: %v", err)
+	}
+
+	// Verify openspec-* symlinks were removed
+	entries, err := os.ReadDir(claudeSkills)
+	if err != nil {
+		t.Fatalf("failed to read .claude/skills/: %v", err)
+	}
+	for _, e := range entries {
+		if len(e.Name()) > 9 && e.Name()[:9] == "openspec-" {
+			t.Errorf("orphaned symlink %s should have been removed", e.Name())
+		}
+	}
+
+	// Verify lf-* symlinks were created
+	lfCount := 0
+	for _, e := range entries {
+		if len(e.Name()) > 3 && e.Name()[:3] == "lf-" {
+			lfCount++
+		}
+	}
+	if lfCount != 4 {
+		t.Errorf("expected 4 lf-* symlinks, got %d", lfCount)
+	}
+}
+
 func TestUpgrade_DoesNotCreateFactoryfile(t *testing.T) {
 	dir := t.TempDir()
 

@@ -297,6 +297,103 @@ func TestCreateSymlinks_NoSkillsDir(t *testing.T) {
 	}
 }
 
+func TestCleanupOrphanedSymlinks_RemovesOrphans(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create .claude/skills/ with openspec-* symlinks (orphans) and a legit lf-* symlink
+	claudeSkills := filepath.Join(tmpDir, ".claude", "skills")
+	if err := os.MkdirAll(claudeSkills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"openspec-explore", "openspec-new-change", "openspec-archive-change"} {
+		if err := os.Symlink("/nonexistent", filepath.Join(claudeSkills, name)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// A non-openspec symlink should be left alone
+	if err := os.Symlink("/other", filepath.Join(claudeSkills, "lf-explore")); err != nil {
+		t.Fatal(err)
+	}
+
+	removed, err := CleanupOrphanedSymlinks(tmpDir, "openspec-")
+	if err != nil {
+		t.Fatalf("CleanupOrphanedSymlinks failed: %v", err)
+	}
+
+	if len(removed) != 3 {
+		t.Fatalf("expected 3 removed, got %d: %v", len(removed), removed)
+	}
+
+	// lf-explore should still exist
+	if _, err := os.Lstat(filepath.Join(claudeSkills, "lf-explore")); err != nil {
+		t.Fatal("lf-explore symlink was removed but should not have been")
+	}
+}
+
+func TestCleanupOrphanedSymlinks_KeepsMatchingSkills(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create .claude/skills/ with an openspec-* symlink
+	claudeSkills := filepath.Join(tmpDir, ".claude", "skills")
+	if err := os.MkdirAll(claudeSkills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("/nonexistent", filepath.Join(claudeSkills, "openspec-explore")); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a corresponding .littlefactory/skills/openspec-explore/ (not orphaned)
+	if err := os.MkdirAll(filepath.Join(tmpDir, ".littlefactory", "skills", "openspec-explore"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	removed, err := CleanupOrphanedSymlinks(tmpDir, "openspec-")
+	if err != nil {
+		t.Fatalf("CleanupOrphanedSymlinks failed: %v", err)
+	}
+
+	if len(removed) != 0 {
+		t.Fatalf("expected 0 removed (skill exists in .littlefactory/skills/), got %d", len(removed))
+	}
+}
+
+func TestCleanupOrphanedSymlinks_SkipsNonSymlinks(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create a real directory (not a symlink) named openspec-something
+	claudeSkills := filepath.Join(tmpDir, ".claude", "skills")
+	if err := os.MkdirAll(filepath.Join(claudeSkills, "openspec-real-dir"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	removed, err := CleanupOrphanedSymlinks(tmpDir, "openspec-")
+	if err != nil {
+		t.Fatalf("CleanupOrphanedSymlinks failed: %v", err)
+	}
+
+	if len(removed) != 0 {
+		t.Fatalf("expected 0 removed (real directory, not symlink), got %d", len(removed))
+	}
+
+	// Directory should still exist
+	if _, err := os.Stat(filepath.Join(claudeSkills, "openspec-real-dir")); err != nil {
+		t.Fatal("real directory was removed but should not have been")
+	}
+}
+
+func TestCleanupOrphanedSymlinks_NoClaudeSkillsDir(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	removed, err := CleanupOrphanedSymlinks(tmpDir, "openspec-")
+	if err != nil {
+		t.Fatalf("CleanupOrphanedSymlinks failed: %v", err)
+	}
+
+	if len(removed) != 0 {
+		t.Fatalf("expected 0 removed, got %d", len(removed))
+	}
+}
+
 func TestCreateSymlinks_IgnoresFilesInSkillsDir(t *testing.T) {
 	tmpDir := t.TempDir()
 

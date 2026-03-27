@@ -42,6 +42,16 @@ func TestExtractSkills(t *testing.T) {
 	if _, err := os.Stat(formalizeSkillFile); err != nil {
 		t.Fatalf("expected lf-formalize/SKILL.md to exist: %v", err)
 	}
+
+	// Verify lf-do skill was extracted
+	doDir := filepath.Join(skillsDir, "lf-do")
+	if _, err := os.Stat(doDir); err != nil {
+		t.Fatalf("expected lf-do skill directory to exist: %v", err)
+	}
+	doSkillFile := filepath.Join(doDir, "SKILL.md")
+	if _, err := os.Stat(doSkillFile); err != nil {
+		t.Fatalf("expected lf-do/SKILL.md to exist: %v", err)
+	}
 }
 
 func TestExtractSkillsIdempotent(t *testing.T) {

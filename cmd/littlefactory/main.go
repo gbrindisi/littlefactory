@@ -92,7 +92,7 @@ func init() {
 	runCmd.Flags().IntVar(&timeout, "timeout", 0,
 		"Timeout in seconds per iteration (default: from config or 600)")
 	runCmd.Flags().StringVarP(&changeName, "change", "c", "",
-		"OpenSpec change name to use as task source")
+		"Change name to use as task source")
 	runCmd.Flags().StringVarP(&tasksPath, "tasks", "t", "",
 		"Explicit path to tasks.json file")
 	runCmd.Flags().BoolVarP(&useWorktree, "worktree", "w", false,
@@ -158,9 +158,9 @@ func validateChangeFlags(projectRoot, change, tasks string, wt bool) error {
 
 	// Validate change exists if --change is specified
 	if change != "" {
-		changeDir := filepath.Join(projectRoot, "openspec", "changes", change)
+		changeDir := filepath.Join(projectRoot, ".littlefactory", "changes", change)
 		if _, err := os.Stat(changeDir); os.IsNotExist(err) {
-			return fmt.Errorf("change %q not found at openspec/changes/%s/", change, change)
+			return fmt.Errorf("change %q not found at .littlefactory/changes/%s/", change, change)
 		}
 
 		tasksPath := filepath.Join(changeDir, "tasks.json")
@@ -290,7 +290,7 @@ func runRun(cmd *cobra.Command, args []string) {
 		taskSource = ts
 	} else if changeName != "" {
 		// Use change-specific tasks.json
-		changeTasksPath := filepath.Join(projectRoot, "openspec", "changes", changeName, "tasks.json")
+		changeTasksPath := filepath.Join(projectRoot, ".littlefactory", "changes", changeName, "tasks.json")
 		ts, err := tasks.NewJSONTaskSourceWithPath(changeTasksPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)

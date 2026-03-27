@@ -33,7 +33,7 @@ func TestValidateChangeFlags_ChangeNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for nonexistent change")
 	}
-	if got := err.Error(); got != `change "nonexistent" not found at openspec/changes/nonexistent/` {
+	if got := err.Error(); got != `change "nonexistent" not found at .littlefactory/changes/nonexistent/` {
 		t.Errorf("unexpected error: %s", got)
 	}
 }
@@ -42,7 +42,7 @@ func TestValidateChangeFlags_ChangeNoTasksJSON(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create change directory but no tasks.json
-	changeDir := filepath.Join(tmpDir, "openspec", "changes", "incomplete-change")
+	changeDir := filepath.Join(tmpDir, ".littlefactory", "changes", "incomplete-change")
 	if err := os.MkdirAll(changeDir, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestValidateChangeFlags_ValidChange(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create valid change directory with tasks.json
-	changeDir := filepath.Join(tmpDir, "openspec", "changes", "feature-a")
+	changeDir := filepath.Join(tmpDir, ".littlefactory", "changes", "feature-a")
 	if err := os.MkdirAll(changeDir, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestValidateChangeFlags_ValidChangeWithWorktree(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create valid change directory with tasks.json
-	changeDir := filepath.Join(tmpDir, "openspec", "changes", "feature-a")
+	changeDir := filepath.Join(tmpDir, ".littlefactory", "changes", "feature-a")
 	if err := os.MkdirAll(changeDir, 0755); err != nil {
 		t.Fatal(err)
 	}

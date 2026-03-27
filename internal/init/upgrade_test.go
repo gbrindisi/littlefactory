@@ -192,16 +192,14 @@ func TestUpgrade_WithClaudeDir(t *testing.T) {
 		t.Fatalf("Upgrade failed: %v", err)
 	}
 
-	// No embedded skills exist, so no symlinks should be created
+	// Verify embedded skill symlinks were created in .claude/skills/
 	claudeSkillsPath := filepath.Join(dir, ".claude", "skills")
-	if _, err := os.Stat(claudeSkillsPath); err == nil {
-		entries, readErr := os.ReadDir(claudeSkillsPath)
-		if readErr != nil {
-			t.Fatalf("failed to read .claude/skills/: %v", readErr)
-		}
-		if len(entries) != 0 {
-			t.Errorf("expected no skill symlinks, got %d", len(entries))
-		}
+	entries, err := os.ReadDir(claudeSkillsPath)
+	if err != nil {
+		t.Fatalf("failed to read .claude/skills/: %v", err)
+	}
+	if len(entries) != 1 {
+		t.Errorf("expected 1 skill symlink (lf-explore), got %d", len(entries))
 	}
 }
 

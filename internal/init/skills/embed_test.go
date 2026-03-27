@@ -13,7 +13,7 @@ func TestExtractSkills(t *testing.T) {
 		t.Fatalf("ExtractSkills failed: %v", err)
 	}
 
-	// No embedded skills exist, so .littlefactory/skills/ should be created but empty
+	// Verify .littlefactory/skills/ was created with embedded skills
 	skillsDir := filepath.Join(tmpDir, ".littlefactory", "skills")
 	info, err := os.Stat(skillsDir)
 	if err != nil {
@@ -23,12 +23,14 @@ func TestExtractSkills(t *testing.T) {
 		t.Fatalf("expected %s to be a directory", skillsDir)
 	}
 
-	entries, err := os.ReadDir(skillsDir)
-	if err != nil {
-		t.Fatalf("failed to read skills directory: %v", err)
+	// Verify lf-explore skill was extracted
+	exploreDir := filepath.Join(skillsDir, "lf-explore")
+	if _, err := os.Stat(exploreDir); err != nil {
+		t.Fatalf("expected lf-explore skill directory to exist: %v", err)
 	}
-	if len(entries) != 0 {
-		t.Fatalf("expected no skill directories, got %d", len(entries))
+	skillFile := filepath.Join(exploreDir, "SKILL.md")
+	if _, err := os.Stat(skillFile); err != nil {
+		t.Fatalf("expected lf-explore/SKILL.md to exist: %v", err)
 	}
 }
 

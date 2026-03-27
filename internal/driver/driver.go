@@ -46,7 +46,7 @@ func (d *Driver) SetStatusOutput(w io.Writer) {
 	d.statusOut = w
 }
 
-// SetChangeName sets the openspec change name for this run.
+// SetChangeName sets the change name for this run.
 func (d *Driver) SetChangeName(name string) {
 	d.changeName = name
 }

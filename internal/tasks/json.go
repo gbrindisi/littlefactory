@@ -186,7 +186,7 @@ func NewJSONTaskSource(projectRoot string, cfg *config.Config) (*JSONTaskSource,
 }
 
 // NewJSONTaskSourceWithPath creates a new JSONTaskSource using an explicit file path.
-// This is used when the task source comes from a non-default location (e.g., an openspec change).
+// This is used when the task source comes from a non-default location (e.g., a littlefactory change).
 // It checks that the file exists and validates its content on creation.
 func NewJSONTaskSourceWithPath(tasksPath string) (*JSONTaskSource, error) {
 	// Check file existence

@@ -164,7 +164,7 @@ func runStatusDefault(projectRoot string, cfg *config.Config) {
 	}
 }
 
-// runStatusChange shows status for a specific openspec change.
+// runStatusChange shows status for a specific change.
 // If a worktree exists for the change, reads from the worktree's tasks.json.
 func runStatusChange(projectRoot, change string) {
 	// Check if a worktree exists for this change
@@ -174,7 +174,7 @@ func runStatusChange(projectRoot, change string) {
 		root = wtPath
 	}
 
-	tasksPath := filepath.Join(root, "openspec", "changes", change, "tasks.json")
+	tasksPath := filepath.Join(root, ".littlefactory", "changes", change, "tasks.json")
 	taskList, err := readTasksFromPath(tasksPath)
 	if err != nil {
 		if os.IsNotExist(err) {

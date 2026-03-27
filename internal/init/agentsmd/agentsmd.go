@@ -125,7 +125,7 @@ func handleMerge(agentsPath, claudePath string) (Result, error) {
 
 	merged := string(agentsContent) + MergeSeparator + string(claudeContent)
 
-	if err := os.WriteFile(agentsPath, []byte(merged), 0o644); err != nil {
+	if err := os.WriteFile(agentsPath, []byte(merged), 0o644); err != nil { // #nosec G703 -- agentsPath is constructed from projectRoot + constant filename
 		return Result{}, fmt.Errorf("writing merged AGENTS.md: %w", err)
 	}
 

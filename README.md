@@ -12,7 +12,7 @@ littlefactory coordinates autonomous agent execution in a sequential loop:
 4. Tracks iteration metadata (timing, output, status)
 5. Repeats until all tasks complete or max iterations reached
 
-It supports multiple agent backends, git worktree isolation, and OpenSpec-based change management.
+It supports multiple agent backends, git worktree isolation, and an embedded spec-driven workflow.
 
 ## Requirements
 
@@ -42,24 +42,53 @@ make install
    ```bash
    littlefactory init
    ```
-   This creates a `Factoryfile`, sets up `AGENTS.md`, updates `.gitignore`, and installs skills.
+   This creates a `Factoryfile`, sets up `AGENTS.md`, updates `.gitignore`, installs skills, and creates the `.littlefactory/changes/` directory.
 
-2. Define tasks in `.littlefactory/tasks.json`:
+2. The only requirement for littlefactory is a `tasks.json` with explicitly sequential tasks:
    ```json
    {
      "tasks": [
-       {"id": "task-1", "title": "Implement feature X", "description": "Details...", "status": "todo"},
-       {"id": "task-2", "title": "Fix bug Y", "description": "Details...", "status": "todo"}
+       {
+         "id": "feat-a1b",
+         "title": "Implement feature X",
+         "description": "Details...",
+         "status": "todo",
+         "blockers": []
+       },
+       {
+         "id": "feat-c2d",
+         "title": "Add tests for feature X",
+         "description": "Details...",
+         "status": "todo",
+         "blockers": ["feat-a1b"]
+       }
      ]
    }
    ```
+   Tasks form a linear chain via `blockers` -- each task (except the first) must reference exactly one predecessor. littlefactory processes them one at a time in order.
 
 3. Run the agent loop:
    ```bash
    littlefactory run
    ```
 
-The agent processes tasks sequentially until all are complete or max iterations is reached.
+### Spec-Driven Workflow
+
+littlefactory embeds a lightweight spec-driven workflow you can use via Claude Code skills. Instead of writing `tasks.json` by hand, you can go from idea to implementation in four steps:
+
+1. **`/lf:explore`** -- Think through a problem with a rubber-duck thinking partner. Explore the codebase, draw diagrams, compare options. No code is written -- this is pure thinking time.
+
+2. **`/lf:formalize`** -- Turn the conversation into a structured change. Takes no arguments -- it derives a change name and generates all artifacts automatically:
+   - `proposal.md` -- why this change is needed
+   - `specs/*/spec.md` -- what the system should do (requirements with scenarios)
+   - `design.md` -- how to implement it (key decisions and tradeoffs)
+   - `tasks.json` -- sequential tasks with rich context for autonomous execution
+
+   All artifacts are written to `.littlefactory/changes/<name>/`.
+
+3. **`/lf:do`** -- Kick off `littlefactory run -c <name>` in the background and monitor progress. The agent works through tasks autonomously while you get status updates.
+
+4. **`/lf:verify`** -- Verify the implementation against the change artifacts. Checks three dimensions: completeness (all tasks done, all requirements covered), correctness (implementation matches specs), and coherence (code follows design decisions).
 
 ## Configuration
 
@@ -136,7 +165,7 @@ If `agent` is not specified, uses `default_agent` from the Factoryfile.
 |------|---------|-------------|
 | `--max-iterations` | from config or 10 | Maximum iterations before stopping |
 | `--timeout` | from config or 600 | Timeout in seconds per iteration |
-| `-c, --change` | | OpenSpec change name to use as task source |
+| `-c, --change` | | Change name to use as task source |
 | `-t, --tasks` | | Explicit path to a tasks.json file |
 | `-w, --worktree` | false | Create a new git worktree for the change |
 
@@ -149,7 +178,7 @@ littlefactory run
 # Use a specific agent
 littlefactory run custom
 
-# Run tasks from an OpenSpec change in a worktree
+# Run tasks from a change in a worktree
 littlefactory run -c my-feature -w
 
 # Point to a specific tasks file
@@ -204,7 +233,7 @@ Tasks are stored in a JSON file (default: `.littlefactory/tasks.json`):
 
 Status values: `todo`, `in_progress`, `done`.
 
-Tasks can also come from an OpenSpec change directory via the `--change` flag.
+Tasks can also come from a change directory via the `--change` flag (resolves to `.littlefactory/changes/<name>/tasks.json`), or from an explicit path via `--tasks`.
 
 ## Worktree Support
 

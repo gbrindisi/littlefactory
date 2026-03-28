@@ -19,7 +19,7 @@ You are an autonomous coding agent working on this project, you are being manage
    - Look for the "Learnings for future iterations" sections from recent tasks
 3. Implement the task described above
 4. Run quality checks (e.g., type checking and tests)
-5. Update AGENTS.md files if you discover reusable patterns (see below)
+5. Update AGENTS.md files near the changed code if you discover reusable patterns (see below)
 6. If checks pass, commit ALL changes with message: `feat: <one line description of task> ({task_id})>`
 7. Append your progress to `<state-directory>/progress.md`
 
@@ -43,10 +43,21 @@ The learnings section is critical - it helps future iterations avoid repeating m
 
 ## Update AGENTS.md
 
-Before committing, if you discovered **reusable patterns** worth preserving, make ONE update to the appropriate AGENTS.md file:
+Before committing, if you discovered **reusable patterns** worth preserving, write them to the AGENTS.md file closest to the code they describe. This enables progressive disclosure -- the coding harness loads AGENTS.md files from the working directory upward, so local knowledge stays local.
 
-1. Find the AGENTS.md nearest to the files you modified (or the root AGENTS.md), if there isn't you can create it
-2. Add your learnings to a `## Codebase Patterns` section (create if needed)
+### Where to place knowledge
+
+1. List the directories containing files you modified
+2. Find their **Least Common Ancestor (LCA)** directory
+3. Write to `<LCA>/AGENTS.md` -- create the file if it doesn't exist
+4. Add your learnings to a `## Codebase Patterns` section (create if needed)
+
+**Scope check -- when in doubt, go local:**
+- Pattern specific to one package/module -> that directory's AGENTS.md
+- Pattern spans a subtree -> subtree root's AGENTS.md
+- Pattern is genuinely repo-wide (build system, CI, top-level conventions) -> root AGENTS.md
+
+A pattern can always be promoted to a broader scope later. A root file full of package-specific notes helps nobody.
 
 **Good patterns to add:**
 - Module conventions: "Services are in src/services/"

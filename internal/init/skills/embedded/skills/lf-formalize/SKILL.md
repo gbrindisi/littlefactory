@@ -254,23 +254,6 @@ Mention concrete files/artifacts to produce.
 - Task 3: `"blockers": ["<task-2-id>"]`
 - Continue linear chain for all tasks
 
-### Housekeeping Task (Conditional)
-
-**Check**: Read `Factoryfile` (or `Factoryfile.yaml`) in the project root. If `specs_dir` is configured (non-empty), append a final housekeeping task to the chain:
-
-```json
-{
-  "id": "<change-name>-<random-3char>",
-  "title": "Merge delta specs to <specs_dir>",
-  "description": "## Context\nHousekeeping task to merge delta specs from the change directory into the project's long-lived specs directory.\n\n## Scope\n- Copy spec files from `.littlefactory/changes/<name>/specs/` to `<specs_dir>`\n- For ADDED specs: copy the entire spec directory\n- For MODIFIED specs: merge the delta into the existing spec file\n- For REMOVED specs: delete the spec file and add a note\n\n## Checklist\n- [ ] Copy/merge all delta specs from change directory to <specs_dir>\n- [ ] Verify merged specs are well-formed\n- [ ] Remove redundant delta operation headers (ADDED/MODIFIED/REMOVED) after merge\n\n## Implementation plan\n1. List all spec directories in `.littlefactory/changes/<name>/specs/`\n2. For each spec, determine if it is new (ADDED) or modifying an existing spec\n3. Copy or merge accordingly into `<specs_dir>`\n4. Clean up delta headers so merged specs read as canonical\n\n## Acceptance criteria\n- All delta specs from the change are reflected in `<specs_dir>`\n- Merged spec files are valid and readable\n- No orphaned delta headers remain\n\n## Key references\n**Change:** <change-name>\n**Change path:** .littlefactory/changes/<change-name>/\n\n- .littlefactory/changes/<change-name>/specs/ (all spec files)",
-  "status": "todo",
-  "labels": ["change-<change-name>", "merge-specs"],
-  "blockers": ["<previous-task-id>"]
-}
-```
-
-If `specs_dir` is NOT configured, do NOT add this task.
-
 ### Final JSON Format
 
 ```json

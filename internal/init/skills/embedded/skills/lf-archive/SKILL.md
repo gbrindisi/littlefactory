@@ -1,5 +1,5 @@
 ---
-name: lf-archive
+name: lf:archive
 description: Archive a completed change - merge delta specs into project specs, enrich with boundaries and gotchas, clean up. Use when the user wants to close out a change after verify.
 ---
 

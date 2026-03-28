@@ -1,5 +1,5 @@
 ---
-name: lf-formalize
+name: lf:formalize
 description: Formalize a change - derive name from conversation, generate all artifacts (proposal, specs, design, tasks.json) in one shot. Use when the user wants to turn a discussion into a structured change with implementation tasks.
 ---
 

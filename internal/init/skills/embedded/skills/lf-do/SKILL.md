@@ -1,5 +1,5 @@
 ---
-name: lf-do
+name: lf:do
 description: Run a littlefactory change in the background and monitor progress. Use when the user wants to execute a change, kick off implementation, or run littlefactory on a change.
 ---
 

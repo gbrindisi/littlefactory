@@ -8,3 +8,7 @@ Tasks are managed automatically by the littlefactory driver. Manual task managem
 - `status: "todo"` - Available for work
 - `status: "in_progress"` - Currently being worked on
 - `status: "done"` - Completed
+
+## Conventions
+
+- Whenever you create a new `AGENTS.md` file, also create a `CLAUDE.md` symlink next to it pointing to it (e.g., `ln -s AGENTS.md CLAUDE.md`).

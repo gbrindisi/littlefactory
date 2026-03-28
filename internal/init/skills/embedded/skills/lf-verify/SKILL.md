@@ -136,8 +136,8 @@ Verify that an implementation matches the change artifacts (specs, tasks, design
 
    **Final Assessment**:
    - If CRITICAL issues: "X critical issue(s) found. Fix before archiving."
-   - If only warnings: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements)."
-   - If all clear: "All checks passed. Ready for archive."
+   - If only warnings: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements). Run `/lf:archive` to merge specs and capture learnings."
+   - If all clear: "All checks passed. Run `/lf:archive` to merge specs and capture learnings."
 
 **Verification Heuristics**
 

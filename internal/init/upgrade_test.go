@@ -54,11 +54,8 @@ func TestUpgrade_WithFactoryfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected .gitignore to exist: %v", err)
 	}
-	if !strings.Contains(string(gitignoreContent), ".littlefactory/run_metadata.json") {
-		t.Error(".gitignore missing .littlefactory/run_metadata.json")
-	}
-	if !strings.Contains(string(gitignoreContent), ".littlefactory/tasks.json") {
-		t.Error(".gitignore missing .littlefactory/tasks.json")
+	if !strings.Contains(string(gitignoreContent), ".littlefactory/") {
+		t.Error(".gitignore missing .littlefactory/")
 	}
 
 	// Verify changes directory was created

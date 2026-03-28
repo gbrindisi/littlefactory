@@ -1,7 +1,5 @@
-.littlefactory/run_metadata.json
+.littlefactory/
 test-environment/
 bin/
-.littlefactory/tasks.json
 coverage.out
 .claude/*.local.json
-openspec/

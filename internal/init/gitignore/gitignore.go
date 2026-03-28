@@ -13,8 +13,7 @@ import (
 // RequiredEntries lists the gitignore patterns that must be present for
 // littlefactory runtime files.
 var RequiredEntries = []string{
-	".littlefactory/run_metadata.json",
-	".littlefactory/tasks.json",
+	".littlefactory/",
 }
 
 // Action describes what the EnsureEntries function did.

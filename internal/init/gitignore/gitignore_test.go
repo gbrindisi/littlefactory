@@ -116,11 +116,11 @@ func TestEnsureEntries_AllEntriesExist(t *testing.T) {
 	}
 }
 
-func TestEnsureEntries_PartialOverlap(t *testing.T) {
+func TestEnsureEntries_OtherContentNoOverlap(t *testing.T) {
 	dir := t.TempDir()
 
-	// Only first entry exists
-	content := RequiredEntries[0] + "\n"
+	// Gitignore with unrelated content but not the required entry
+	content := "node_modules/\n*.log\n"
 	gitignorePath := filepath.Join(dir, ".gitignore")
 	if err := os.WriteFile(gitignorePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("failed to create .gitignore: %v", err)
@@ -135,20 +135,21 @@ func TestEnsureEntries_PartialOverlap(t *testing.T) {
 		t.Errorf("expected action %q, got %q", ActionAdded, result.Action)
 	}
 
-	if len(result.Added) != 1 {
-		t.Errorf("expected 1 added entry, got %d", len(result.Added))
+	if len(result.Added) != len(RequiredEntries) {
+		t.Errorf("expected %d added entries, got %d", len(RequiredEntries), len(result.Added))
 	}
 
-	if len(result.Skipped) != 1 {
-		t.Errorf("expected 1 skipped entry, got %d", len(result.Skipped))
-	}
-
-	// Verify the second entry was added
 	readContent, err := os.ReadFile(gitignorePath)
 	if err != nil {
 		t.Fatalf("failed to read .gitignore: %v", err)
 	}
 
+	// Original content preserved
+	if !strings.HasPrefix(string(readContent), content) {
+		t.Error("existing content was not preserved")
+	}
+
+	// Required entry added
 	for _, entry := range RequiredEntries {
 		if !strings.Contains(string(readContent), entry) {
 			t.Errorf(".gitignore missing entry %q", entry)
@@ -267,7 +268,7 @@ func TestEnsureEntries_EntryWithWhitespace(t *testing.T) {
 	dir := t.TempDir()
 
 	// Entry exists with surrounding whitespace
-	content := "  .littlefactory/run_metadata.json  \n.littlefactory/tasks.json\n"
+	content := "  .littlefactory/  \n"
 	gitignorePath := filepath.Join(dir, ".gitignore")
 	if err := os.WriteFile(gitignorePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("failed to create .gitignore: %v", err)
@@ -296,8 +297,7 @@ func TestRequiredEntries(t *testing.T) {
 	}
 
 	expected := map[string]bool{
-		".littlefactory/run_metadata.json": true,
-		".littlefactory/tasks.json":        true,
+		".littlefactory/": true,
 	}
 	for _, entry := range RequiredEntries {
 		if !expected[entry] {

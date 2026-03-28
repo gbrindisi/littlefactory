@@ -203,6 +203,16 @@ If spec merging was skipped (no specs_dir), still offer cleanup.
 
 ---
 
+## Step 8: Offer to commit
+
+Use the **AskUserQuestion tool** to ask:
+> "Commit the spec merge and archival? (yes/no)"
+
+- If **yes**: stage all changed/added files under `<specs_dir>/` (and the deletion of `.littlefactory/changes/<name>/` if cleaned up), then create a commit with message: `docs: archive <name> - merge specs and capture learnings`
+- If **no**: leave changes unstaged.
+
+---
+
 ## Output
 
 Summarize what was done:
@@ -211,6 +221,7 @@ Summarize what was done:
 - Gotchas captured (count)
 - Boundaries captured (count)
 - Whether change directory was cleaned up
+- Whether changes were committed
 - Suggest next steps if applicable
 
 ---

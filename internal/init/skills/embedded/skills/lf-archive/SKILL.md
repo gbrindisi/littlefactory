@@ -1,6 +1,6 @@
 ---
 name: lf:archive
-description: Archive a completed change - merge delta specs into project specs, enrich with boundaries and gotchas, clean up. Use when the user wants to close out a change after verify.
+description: Archive a completed change - merge delta specs into project specs, enrich with boundaries and gotchas, clean up. Use to close out a change after verify.
 ---
 
 Archive a completed change. Merge delta specs into the project's long-lived specs directory, enrich them with boundaries and gotchas from implementation experience, and optionally clean up the change directory.

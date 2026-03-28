@@ -1,6 +1,6 @@
 ---
 name: lf:do
-description: Run a littlefactory change in the background and monitor progress. Use when the user wants to execute a change, kick off implementation, or run littlefactory on a change.
+description: Run a littlefactory change in the background and monitor progress. Use to execute a change, kick off implementation, or run littlefactory on a change.
 ---
 
 Run a littlefactory change as a background process and monitor it to completion.

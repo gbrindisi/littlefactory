@@ -1,6 +1,6 @@
 ---
 name: lf:verify
-description: Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.
+description: Verify implementation matches change artifacts. Use to validate that implementation is complete, correct, and coherent before archiving.
 ---
 
 Verify that an implementation matches the change artifacts (specs, tasks, design).

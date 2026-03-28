@@ -74,7 +74,7 @@ make install
 
 ### Spec-Driven Workflow
 
-littlefactory embeds a lightweight spec-driven workflow you can use via Claude Code skills. Instead of writing `tasks.json` by hand, you can go from idea to implementation in four steps:
+littlefactory embeds a lightweight spec-driven workflow you can use via Claude Code skills. Instead of writing `tasks.json` by hand, you can go from idea to implementation in five steps:
 
 1. **`/lf:explore`** -- Think through a problem with a rubber-duck thinking partner. Explore the codebase, draw diagrams, compare options. No code is written -- this is pure thinking time.
 
@@ -89,6 +89,8 @@ littlefactory embeds a lightweight spec-driven workflow you can use via Claude C
 3. **`/lf:do`** -- Kick off `littlefactory run -c <name>` in the background and monitor progress. The agent works through tasks autonomously while you get status updates.
 
 4. **`/lf:verify`** -- Verify the implementation against the change artifacts. Checks three dimensions: completeness (all tasks done, all requirements covered), correctness (implementation matches specs), and coherence (code follows design decisions).
+
+5. **`/lf:archive`** -- Merge delta specs from the change into main specs, capture gotchas and boundaries as reusable knowledge, and optionally clean up the change directory.
 
 ## Configuration
 

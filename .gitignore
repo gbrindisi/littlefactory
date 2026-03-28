@@ -3,3 +3,4 @@ test-environment/
 bin/
 coverage.out
 .claude/*.local.json
+.claude/skills/lf*

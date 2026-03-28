@@ -3,6 +3,7 @@ package driver
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -173,6 +174,54 @@ func SaveMetadata(projectRoot string, cfg *config.Config, metadata *RunMetadata)
 	}
 
 	return os.WriteFile(filePath, data, 0644)
+}
+
+// loadMetadataJSON is the raw JSON shape used for reading run_metadata.json.
+// Timestamps are stored in Python isoformat (no timezone), so we parse them manually.
+type loadMetadataJSON struct {
+	RunID     string    `json:"run_id"`
+	StartedAt string    `json:"started_at"`
+	EndedAt   *string   `json:"ended_at"`
+	Status    RunStatus `json:"status"`
+}
+
+// LoadMetadata reads and parses run_metadata.json from the given state directory path.
+// Returns nil, nil if the file does not exist.
+func LoadMetadata(stateDir string) (*RunMetadata, error) {
+	filePath := filepath.Join(stateDir, "run_metadata.json")
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var raw loadMetadataJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("parsing run_metadata.json: %w", err)
+	}
+
+	startedAt, err := time.Parse(pythonISOFormat, raw.StartedAt)
+	if err != nil {
+		return nil, fmt.Errorf("parsing started_at: %w", err)
+	}
+
+	meta := &RunMetadata{
+		RunID:     raw.RunID,
+		StartedAt: startedAt,
+		Status:    raw.Status,
+	}
+
+	if raw.EndedAt != nil {
+		endedAt, err := time.Parse(pythonISOFormat, *raw.EndedAt)
+		if err != nil {
+			return nil, fmt.Errorf("parsing ended_at: %w", err)
+		}
+		meta.EndedAt = &endedAt
+	}
+
+	return meta, nil
 }
 
 // CalculateAggregateStats updates the run metadata with aggregate statistics

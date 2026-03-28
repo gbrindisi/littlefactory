@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gbrindisi/littlefactory/internal/driver"
 	"github.com/gbrindisi/littlefactory/internal/tasks"
 )
 
@@ -195,4 +196,72 @@ func TestPrintVerboseTasks(t *testing.T) {
 	defer func() { os.Stdout = old }()
 
 	printVerboseTasks(taskList)
+}
+
+func TestFormatSummaryWithMeta_NilMeta(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 3, InProgress: "Task B"}
+	got := formatSummaryWithMeta(s, nil)
+	expected := `feature-a: 3/5 done (in_progress: "Task B")`
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_NilMetaComplete(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 5}
+	got := formatSummaryWithMeta(s, nil)
+	expected := "feature-a: 5/5 done [complete]"
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_Running(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 3, InProgress: "Task B"}
+	meta := &driver.RunMetadata{Status: driver.RunStatusRunning}
+	got := formatSummaryWithMeta(s, meta)
+	expected := `feature-a: 3/5 done [running] (in_progress: "Task B")`
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_Failed(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 3}
+	meta := &driver.RunMetadata{Status: driver.RunStatusFailed}
+	got := formatSummaryWithMeta(s, meta)
+	expected := "feature-a: 3/5 done [failed]"
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_ReadyToMerge(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 5}
+	meta := &driver.RunMetadata{Status: driver.RunStatusCompleted}
+	got := formatSummaryWithMeta(s, meta)
+	expected := "feature-a: 5/5 done [completed] [ready to merge]"
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_CompletedNotAllDone(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 3}
+	meta := &driver.RunMetadata{Status: driver.RunStatusCompleted}
+	got := formatSummaryWithMeta(s, meta)
+	expected := "feature-a: 3/5 done [completed]"
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
+}
+
+func TestFormatSummaryWithMeta_Cancelled(t *testing.T) {
+	s := taskSummary{Name: "feature-a", Total: 5, Done: 2}
+	meta := &driver.RunMetadata{Status: driver.RunStatusCancelled}
+	got := formatSummaryWithMeta(s, meta)
+	expected := "feature-a: 2/5 done [cancelled]"
+	if got != expected {
+		t.Errorf("expected %q, got %q", expected, got)
+	}
 }

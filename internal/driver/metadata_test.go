@@ -278,6 +278,51 @@ func TestIterationMetadataMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestLoadMetadata_NotFound(t *testing.T) {
+	tmpDir := t.TempDir()
+	meta, err := LoadMetadata(tmpDir)
+	if err != nil {
+		t.Fatalf("LoadMetadata() unexpected error: %v", err)
+	}
+	if meta != nil {
+		t.Error("expected nil metadata for missing file")
+	}
+}
+
+func TestLoadMetadata_Valid(t *testing.T) {
+	tmpDir := t.TempDir()
+	data := `{"run_id":"20240130-150405","started_at":"2024-01-30T15:04:05","status":"completed","max_iterations":10,"total_iterations":2,"successful_iterations":2,"failed_iterations":0,"ended_at":null,"total_duration_seconds":null,"avg_iteration_duration_seconds":null,"iterations":[]}`
+	if err := os.WriteFile(filepath.Join(tmpDir, "run_metadata.json"), []byte(data), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	meta, err := LoadMetadata(tmpDir)
+	if err != nil {
+		t.Fatalf("LoadMetadata() error: %v", err)
+	}
+	if meta == nil {
+		t.Fatal("expected non-nil metadata")
+	}
+	if meta.Status != RunStatusCompleted {
+		t.Errorf("expected status completed, got %q", meta.Status)
+	}
+	if meta.RunID != "20240130-150405" {
+		t.Errorf("expected run_id 20240130-150405, got %q", meta.RunID)
+	}
+}
+
+func TestLoadMetadata_InvalidJSON(t *testing.T) {
+	tmpDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(tmpDir, "run_metadata.json"), []byte("not json"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := LoadMetadata(tmpDir)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
 func TestRunMetadataMarshalJSONNullEndedAt(t *testing.T) {
 	startedAt := time.Date(2024, 1, 30, 15, 4, 5, 0, time.UTC)
 

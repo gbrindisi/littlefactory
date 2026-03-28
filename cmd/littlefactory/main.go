@@ -184,13 +184,14 @@ func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
 		return "", fmt.Errorf("uncommitted changes detected; commit or stash before creating worktree")
 	}
 
-	// Check if worktree already exists
+	// Check if worktree already exists — reuse it instead of erroring
 	exists, existingPath, err := worktree.WorktreeExists(projectRoot, change)
 	if err != nil {
 		return "", fmt.Errorf("checking worktree: %w", err)
 	}
 	if exists {
-		return "", fmt.Errorf("worktree for %q already exists at %s; run without -w to use existing worktree", change, existingPath)
+		fmt.Printf("Reusing existing worktree at %s\n", existingPath)
+		return existingPath, nil
 	}
 
 	// Resolve worktrees directory

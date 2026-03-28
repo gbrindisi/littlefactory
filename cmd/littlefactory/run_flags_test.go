@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -185,5 +186,84 @@ func TestValidateChangeFlags_TasksNotFoundErrorMessage(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "nonexistent.json") {
 		t.Errorf("expected file path in error, got: %s", err.Error())
+	}
+}
+
+// gitRun executes a git command in the given directory and fails the test on error.
+func gitRun(t *testing.T, dir string, args ...string) {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %s failed: %v\n%s", strings.Join(args, " "), err, out)
+	}
+}
+
+func TestPrepareWorktree_ReusesExisting(t *testing.T) {
+	tmpDir := t.TempDir()
+	repoDir := filepath.Join(tmpDir, "repo")
+	if err := os.MkdirAll(repoDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Initialize git repo
+	gitRun(t, repoDir, "init")
+	gitRun(t, repoDir, "config", "user.email", "test@test.com")
+	gitRun(t, repoDir, "config", "user.name", "Test")
+	if err := os.WriteFile(filepath.Join(repoDir, "README.md"), []byte("init"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	gitRun(t, repoDir, "add", ".")
+	gitRun(t, repoDir, "commit", "-m", "initial commit")
+
+	// Create a worktree manually first
+	wtDir := filepath.Join(tmpDir, "my-feature")
+	gitRun(t, repoDir, "worktree", "add", wtDir, "-b", "my-feature")
+
+	// Now prepareWorktree should reuse it instead of erroring
+	got, err := prepareWorktree(repoDir, "my-feature", tmpDir)
+	if err != nil {
+		t.Fatalf("expected reuse, got error: %v", err)
+	}
+
+	// Resolve symlinks for comparison (macOS /var -> /private/var)
+	resolvedGot, _ := filepath.EvalSymlinks(got)
+	resolvedExpected, _ := filepath.EvalSymlinks(wtDir)
+	if resolvedGot != resolvedExpected {
+		t.Errorf("expected reused path %q, got %q", resolvedExpected, resolvedGot)
+	}
+}
+
+func TestPrepareWorktree_CreatesNew(t *testing.T) {
+	tmpDir := t.TempDir()
+	repoDir := filepath.Join(tmpDir, "repo")
+	if err := os.MkdirAll(repoDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	gitRun(t, repoDir, "init")
+	gitRun(t, repoDir, "config", "user.email", "test@test.com")
+	gitRun(t, repoDir, "config", "user.name", "Test")
+	if err := os.WriteFile(filepath.Join(repoDir, "README.md"), []byte("init"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	gitRun(t, repoDir, "add", ".")
+	gitRun(t, repoDir, "commit", "-m", "initial commit")
+
+	// prepareWorktree should create a new worktree
+	got, err := prepareWorktree(repoDir, "new-feature", tmpDir)
+	if err != nil {
+		t.Fatalf("expected success, got error: %v", err)
+	}
+
+	expectedPath := filepath.Join(tmpDir, "new-feature")
+	if got != expectedPath {
+		t.Errorf("expected path %q, got %q", expectedPath, got)
+	}
+
+	// Verify directory exists
+	if _, err := os.Stat(got); os.IsNotExist(err) {
+		t.Error("worktree directory was not created")
 	}
 }

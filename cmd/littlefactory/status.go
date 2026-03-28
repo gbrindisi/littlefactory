@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/gbrindisi/littlefactory/internal/config"
+	"github.com/gbrindisi/littlefactory/internal/driver"
 	"github.com/gbrindisi/littlefactory/internal/tasks"
 	"github.com/gbrindisi/littlefactory/internal/worktree"
 	"github.com/spf13/cobra"
@@ -58,6 +59,27 @@ func formatSummary(s taskSummary) string {
 	if s.Done == s.Total && s.Total > 0 {
 		line += " [complete]"
 	} else if s.InProgress != "" {
+		line += fmt.Sprintf(" (in_progress: %q)", s.InProgress)
+	}
+	return line
+}
+
+// formatSummaryWithMeta formats a taskSummary with optional run metadata.
+// When metadata is present, appends run state and [ready to merge] indicator.
+func formatSummaryWithMeta(s taskSummary, meta *driver.RunMetadata) string {
+	line := fmt.Sprintf("%s: %d/%d done", s.Name, s.Done, s.Total)
+
+	if meta != nil {
+		line += fmt.Sprintf(" [%s]", meta.Status)
+		if s.Done == s.Total && s.Total > 0 && meta.Status == driver.RunStatusCompleted {
+			line += " [ready to merge]"
+			return line
+		}
+	} else if s.Done == s.Total && s.Total > 0 {
+		line += " [complete]"
+	}
+
+	if s.InProgress != "" {
 		line += fmt.Sprintf(" (in_progress: %q)", s.InProgress)
 	}
 	return line
@@ -207,8 +229,10 @@ func runStatusAll(projectRoot string, cfg *config.Config) {
 			continue
 		}
 
+		stateDir := filepath.Join(wt.Path, cfg.StateDir)
+
 		// Check for tasks.json in the worktree's state directory
-		tasksPath := filepath.Join(wt.Path, cfg.StateDir, "tasks.json")
+		tasksPath := filepath.Join(stateDir, "tasks.json")
 		taskList, err := readTasksFromPath(tasksPath)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -224,7 +248,10 @@ func runStatusAll(projectRoot string, cfg *config.Config) {
 		}
 
 		s := summarizeTasks(name, taskList)
-		fmt.Println(formatSummary(s))
+
+		// Load run metadata (nil if missing — gracefully handled)
+		meta, _ := driver.LoadMetadata(stateDir)
+		fmt.Println(formatSummaryWithMeta(s, meta))
 
 		if statusVerbose {
 			printVerboseTasks(taskList)

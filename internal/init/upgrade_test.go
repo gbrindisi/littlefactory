@@ -198,8 +198,8 @@ func TestUpgrade_WithClaudeDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read .claude/skills/: %v", err)
 	}
-	if len(entries) != 4 {
-		t.Errorf("expected 4 skill symlinks (lf-do, lf-explore, lf-formalize, lf-verify), got %d", len(entries))
+	if len(entries) != 5 {
+		t.Errorf("expected 5 skill symlinks (lf-archive, lf-do, lf-explore, lf-formalize, lf-verify), got %d", len(entries))
 	}
 }
 
@@ -244,8 +244,8 @@ func TestUpgrade_CleansUpOrphanedOpenspecSymlinks(t *testing.T) {
 			lfCount++
 		}
 	}
-	if lfCount != 4 {
-		t.Errorf("expected 4 lf-* symlinks, got %d", lfCount)
+	if lfCount != 5 {
+		t.Errorf("expected 5 lf-* symlinks, got %d", lfCount)
 	}
 }
 

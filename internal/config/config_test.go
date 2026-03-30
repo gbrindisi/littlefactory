@@ -946,6 +946,50 @@ agents:
 
 // Tests for SpecsDir config field
 
+// Tests for UseWorktree config field
+
+func TestLoadConfig_UseWorktree_DefaultFalse(t *testing.T) {
+	tmpDir := t.TempDir()
+	factoryfile := filepath.Join(tmpDir, "Factoryfile")
+	if err := os.WriteFile(factoryfile, []byte(validFactoryfileContent()), 0644); err != nil {
+		t.Fatalf("failed to write Factoryfile: %v", err)
+	}
+
+	cfg, err := LoadConfig(tmpDir, CLIFlags{})
+	if err != nil {
+		t.Fatalf("LoadConfig() error = %v", err)
+	}
+
+	if cfg.UseWorktree {
+		t.Error("UseWorktree should default to false")
+	}
+}
+
+func TestLoadConfig_UseWorktree_Configured(t *testing.T) {
+	tmpDir := t.TempDir()
+	factoryfile := filepath.Join(tmpDir, "Factoryfile")
+	content := `max_iterations: 10
+timeout: 600
+use_worktree: true
+default_agent: claude
+agents:
+  claude:
+    command: "claude --print"
+`
+	if err := os.WriteFile(factoryfile, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write Factoryfile: %v", err)
+	}
+
+	cfg, err := LoadConfig(tmpDir, CLIFlags{})
+	if err != nil {
+		t.Fatalf("LoadConfig() error = %v", err)
+	}
+
+	if !cfg.UseWorktree {
+		t.Error("UseWorktree should be true when configured")
+	}
+}
+
 func TestLoadConfig_SpecsDir_DefaultEmpty(t *testing.T) {
 	tmpDir := t.TempDir()
 	factoryfile := filepath.Join(tmpDir, "Factoryfile")

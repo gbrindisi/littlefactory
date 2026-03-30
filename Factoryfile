@@ -1,6 +1,7 @@
 max_iterations: 10
 timeout: 600
 specs_dir: "specs/"
+use_worktree: true
 default_agent: claude
 
 agents:

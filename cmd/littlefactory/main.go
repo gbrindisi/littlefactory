@@ -239,13 +239,16 @@ func runRun(cmd *cobra.Command, args []string) {
 		tasksPath = filepath.Join(cwd, tasksPath)
 	}
 
+	// Apply config default for worktree if -w flag not explicitly set
+	if !cmd.Flags().Changed("worktree") {
+		useWorktree = cfg.UseWorktree
+	}
+
 	// Validate tasks, change, and worktree flags
 	if err := validateChangeFlags(projectRoot, changeName, tasksPath, useWorktree); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
-
-	// Handle worktree creation if -w is set
 	var worktreePath string
 	if useWorktree {
 		wtPath, err := prepareWorktree(projectRoot, changeName, cfg.WorktreesDir)

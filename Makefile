@@ -1,4 +1,4 @@
-.PHONY: build test install setup
+.PHONY: build test test-integration install setup
 
 PREFIX ?= /usr/local
 
@@ -17,6 +17,9 @@ install: build
 
 test:
 	go test ./...
+
+test-integration: build
+	go test -tags=integration -v ./cmd/littlefactory/
 
 setup:
 	go install github.com/securego/gosec/v2/cmd/gosec@latest

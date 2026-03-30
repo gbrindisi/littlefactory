@@ -134,13 +134,25 @@ func checkAllTasksDone(wtPath, changeName string) error {
 	return nil
 }
 
+// selfExe returns the path to the currently running littlefactory binary.
+// This ensures merge shells out to the same binary, not a different installed version.
+func selfExe() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return "littlefactory" // fallback to PATH
+	}
+	return exe
+}
+
 // verifyFixLoop runs the verify-fix cycle up to maxRetries times.
 func verifyFixLoop(changeName string, maxRetries int) error {
+	self := selfExe()
+
 	for i := 0; i < maxRetries; i++ {
 		fmt.Printf("Verify attempt %d/%d...\n", i+1, maxRetries)
 
 		// Run verify
-		verifyCmd := exec.Command("littlefactory", "verify", "-c", changeName)
+		verifyCmd := exec.Command(self, "verify", "-c", changeName)
 		verifyCmd.Stdout = os.Stdout
 		verifyCmd.Stderr = os.Stderr
 		if err := verifyCmd.Run(); err == nil {
@@ -156,7 +168,7 @@ func verifyFixLoop(changeName string, maxRetries int) error {
 		}
 
 		// Run fix (littlefactory run in the worktree)
-		runCmd := exec.Command("littlefactory", "run", "-c", changeName, "-w")
+		runCmd := exec.Command(self, "run", "-c", changeName, "-w")
 		runCmd.Stdout = os.Stdout
 		runCmd.Stderr = os.Stderr
 		if err := runCmd.Run(); err != nil {
@@ -221,8 +233,8 @@ func mergeIntoMain(projectRoot, branchName string) error {
 // cleanupWorktreeAndBranch removes the worktree and deletes the branch.
 // Failures are warned about but do not cause the merge to be reverted.
 func cleanupWorktreeAndBranch(projectRoot, wtPath, branchName string) {
-	// Remove worktree
-	removeCmd := exec.Command("git", "worktree", "remove", wtPath)
+	// Remove worktree (--force needed because agent may leave untracked files)
+	removeCmd := exec.Command("git", "worktree", "remove", "--force", wtPath)
 	removeCmd.Dir = projectRoot
 	if out, err := removeCmd.CombinedOutput(); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: failed to remove worktree: %s\n", strings.TrimSpace(string(out)))

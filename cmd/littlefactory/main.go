@@ -175,15 +175,6 @@ func validateChangeFlags(projectRoot, change, tasks string, wt bool) error {
 // prepareWorktree performs worktree precondition checks and creates the worktree.
 // Returns the worktree path on success.
 func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
-	// Check for clean working tree
-	clean, err := worktree.IsClean(projectRoot)
-	if err != nil {
-		return "", fmt.Errorf("checking git status: %w", err)
-	}
-	if !clean {
-		return "", fmt.Errorf("uncommitted changes detected; commit or stash before creating worktree")
-	}
-
 	// Check if worktree already exists — reuse it instead of erroring
 	exists, existingPath, err := worktree.WorktreeExists(projectRoot, change)
 	if err != nil {
@@ -192,6 +183,15 @@ func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
 	if exists {
 		fmt.Printf("Reusing existing worktree at %s\n", existingPath)
 		return existingPath, nil
+	}
+
+	// Only check for clean working tree when creating a new worktree
+	clean, err := worktree.IsClean(projectRoot)
+	if err != nil {
+		return "", fmt.Errorf("checking git status: %w", err)
+	}
+	if !clean {
+		return "", fmt.Errorf("uncommitted changes detected; commit or stash before creating worktree")
 	}
 
 	// Resolve worktrees directory
@@ -280,6 +280,13 @@ func runRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Create task source with priority: --tasks > --change > default
+	// When using a worktree, resolve paths against the worktree root
+	// so task state updates go to the worktree's copy.
+	taskRoot := projectRoot
+	if worktreePath != "" {
+		taskRoot = worktreePath
+	}
+
 	var taskSource tasks.TaskSource
 	if tasksPath != "" {
 		// Use explicit --tasks path (highest priority)
@@ -291,7 +298,7 @@ func runRun(cmd *cobra.Command, args []string) {
 		taskSource = ts
 	} else if changeName != "" {
 		// Use change-specific tasks.json
-		changeTasksPath := filepath.Join(projectRoot, ".littlefactory", "changes", changeName, "tasks.json")
+		changeTasksPath := filepath.Join(taskRoot, ".littlefactory", "changes", changeName, "tasks.json")
 		ts, err := tasks.NewJSONTaskSourceWithPath(changeTasksPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)

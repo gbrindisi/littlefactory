@@ -151,6 +151,20 @@ func runVerify(cmd *cobra.Command, args []string) {
 
 	prompt := template.RenderVerifier(tmpl, changeCtx)
 
+	// Switch to worktree directory so agent sees worktree code
+	if workDir != projectRoot {
+		origDir, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		if err := os.Chdir(workDir); err != nil {
+			fmt.Fprintf(os.Stderr, "Error changing to worktree: %v\n", err)
+			os.Exit(1)
+		}
+		defer func() { _ = os.Chdir(origDir) }()
+	}
+
 	// Create agent
 	ag := agent.NewConfigurableAgent(agentConfig.Command, agentConfig.Env)
 

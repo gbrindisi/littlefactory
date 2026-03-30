@@ -31,7 +31,7 @@ The system SHALL display status in a concise summary format.
 - **THEN** System shows `[complete]` indicator
 
 ### Requirement: Status shows all worktrees
-The system SHALL show status for all worktrees when `--all` flag is used.
+The system SHALL show status for all worktrees when `--all` flag is used, including run state and merge readiness derived from `run_metadata.json`.
 
 #### Scenario: Status all flag
 - **WHEN** User runs `littlefactory status --all`
@@ -40,6 +40,18 @@ The system SHALL show status for all worktrees when `--all` flag is used.
 #### Scenario: Status all discovers worktrees
 - **WHEN** User runs `littlefactory status --all`
 - **THEN** System uses `git worktree list` to find all worktrees and checks each for tasks.json
+
+#### Scenario: Status all shows run state
+- **WHEN** User runs `littlefactory status --all` and a worktree has `run_metadata.json`
+- **THEN** System shows run state (running, completed, failed, cancelled) alongside task counts
+
+#### Scenario: Status all shows merge readiness
+- **WHEN** User runs `littlefactory status --all` and a worktree has all tasks done and run status completed
+- **THEN** System shows `[ready to merge]` indicator
+
+#### Scenario: Status all without run metadata
+- **WHEN** User runs `littlefactory status --all` and a worktree has no `run_metadata.json`
+- **THEN** System shows task counts only, without run state (no error)
 
 ### Requirement: Status detailed view
 The system SHALL show detailed task list when viewing a specific change.
@@ -51,3 +63,4 @@ The system SHALL show detailed task list when viewing a specific change.
 ## Boundaries
 
 ## Gotchas
+

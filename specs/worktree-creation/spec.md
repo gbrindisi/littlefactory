@@ -27,12 +27,16 @@ The system SHALL require a clean git working tree before creating a worktree to 
 - **WHEN** the user runs with `--worktree` and the working tree is clean
 - **THEN** the system proceeds with worktree creation
 
-### Requirement: Worktree flag errors if worktree exists
-The system SHALL exit with an error if a worktree for the given change already exists, rather than silently reusing it.
+### Requirement: Worktree flag reuses existing worktree
+The system SHALL reuse an existing worktree for the given change name instead of erroring, logging that it is reusing the existing worktree.
 
-#### Scenario: Existing worktree blocks creation
+#### Scenario: Existing worktree is reused
 - **WHEN** the user runs with `--worktree` and a worktree for that change name already exists
-- **THEN** the system exits with an error indicating the worktree already exists
+- **THEN** the system logs "Reusing existing worktree at <path>" and proceeds to execute tasks in the existing worktree
+
+#### Scenario: New worktree created when none exists
+- **WHEN** the user runs with `--worktree` and no worktree for that change name exists
+- **THEN** the system creates a new worktree as before
 
 ### Requirement: Worktree creation uses git worktree add
 The system SHALL use `git worktree add` to create worktrees with a branch named after the change.
@@ -57,5 +61,9 @@ The system SHALL detect existing worktrees by inspecting the git common director
 - **THEN** the detection reports no worktrees (does not error)
 
 ## Boundaries
+- ALWAYS: Check worktree-exists before IsClean -- reuse path must not be blocked by dirty tree check
+- NEVER: Error when a worktree already exists for a change -- always reuse
 
 ## Gotchas
+- `IsClean` check must run AFTER worktree-exists check, not before. Otherwise the verify-fix loop fails when `tasks.json` has uncommitted changes in an existing worktree.
+  (learned: parallel-worktree-workflow, 2026-03-28)

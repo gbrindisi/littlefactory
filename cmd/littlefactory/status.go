@@ -231,25 +231,31 @@ func runStatusAll(projectRoot string, cfg *config.Config) {
 
 		stateDir := filepath.Join(wt.Path, cfg.StateDir)
 
-		// Check for tasks.json in the worktree's state directory
-		tasksPath := filepath.Join(stateDir, "tasks.json")
+		// Derive change name from branch (worktree branch == change name)
+		changeName := wt.BranchShort()
+		if changeName == "" {
+			changeName = filepath.Base(wt.Path)
+		}
+
+		// Check for change-specific tasks.json first, then default
+		tasksPath := filepath.Join(wt.Path, cfg.StateDir, "changes", changeName, "tasks.json")
 		taskList, err := readTasksFromPath(tasksPath)
 		if err != nil {
-			if os.IsNotExist(err) {
+			// Fall back to default state dir tasks.json
+			tasksPath = filepath.Join(stateDir, "tasks.json")
+			taskList, err = readTasksFromPath(tasksPath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					continue
+				}
+				fmt.Fprintf(os.Stderr, "Error reading tasks in %s: %v\n", wt.Path, err)
 				continue
 			}
-			fmt.Fprintf(os.Stderr, "Error reading tasks in %s: %v\n", wt.Path, err)
-			continue
 		}
 
-		name := wt.BranchShort()
-		if name == "" {
-			name = filepath.Base(wt.Path)
-		}
+		s := summarizeTasks(changeName, taskList)
 
-		s := summarizeTasks(name, taskList)
-
-		// Load run metadata (nil if missing — gracefully handled)
+		// Load run metadata (nil if missing -- gracefully handled)
 		meta, _ := driver.LoadMetadata(stateDir)
 		fmt.Println(formatSummaryWithMeta(s, meta))
 

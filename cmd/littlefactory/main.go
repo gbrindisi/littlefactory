@@ -201,7 +201,19 @@ func prepareWorktree(projectRoot, change, worktreesDir string) (string, error) {
 	}
 
 	// Create the worktree
-	return worktree.Create(projectRoot, change, resolvedDir)
+	wtPath, err := worktree.Create(projectRoot, change, resolvedDir)
+	if err != nil {
+		return "", err
+	}
+
+	// Seed the worktree with change artifacts and project specs.
+	// `.littlefactory/` is commonly gitignored, so `git worktree add` won't
+	// bring proposal/specs/tasks.json across — copy them explicitly.
+	if err := worktree.Seed(projectRoot, wtPath, change); err != nil {
+		return "", fmt.Errorf("seeding worktree: %w", err)
+	}
+
+	return wtPath, nil
 }
 
 // runRun executes the main agent loop

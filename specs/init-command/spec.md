@@ -1,12 +1,12 @@
 # init-command
 
 ## What It Does
-The init command bootstraps a littlefactory project by creating a Factoryfile with default configuration, setting up AGENTS.md, updating .gitignore, installing skills (including /lf:* skills), and creating the `.littlefactory/changes/` directory.
+The init command bootstraps a littlefactory project by creating a Factoryfile with default configuration, setting up AGENTS.md, updating .gitignore, installing skills (including /lf-* skills), and creating the `.littlefactory/changes/` directory.
 
 ## Requirements
 
 ### Requirement: Init command creates Factoryfile
-The system SHALL provide an `init` command that creates a Factoryfile with default configuration, sets up AGENTS.md, updates .gitignore, installs skills (including `/lf:*` skills), and creates the `.littlefactory/changes/` directory.
+The system SHALL provide an `init` command that creates a Factoryfile with default configuration, sets up AGENTS.md, updates .gitignore, installs skills (including `/lf-*` skills), and creates the `.littlefactory/changes/` directory.
 
 #### Scenario: Successful init in empty directory
 - **WHEN** user runs `littlefactory init` in a directory without Factoryfile

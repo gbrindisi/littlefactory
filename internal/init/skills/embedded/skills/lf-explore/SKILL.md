@@ -1,11 +1,11 @@
 ---
-name: lf:explore
+name: lf-explore
 description: Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use to think through something before or during a change.
 ---
 
 Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
-**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first (e.g., formalize a change with `/lf:formalize`).
+**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first (e.g., formalize a change with `/lf-formalize`).
 
 **This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
 
@@ -89,7 +89,7 @@ This tells you:
 Think freely. When insights crystallize, you might offer:
 
 - "This feels solid enough to formalize. Want me to create a change?"
-  -> Can transition to `/lf:formalize`
+  -> Can transition to `/lf-formalize`
 - Or keep exploring - no pressure to formalize
 
 ### When a change exists
@@ -195,7 +195,7 @@ You: [reads codebase]
 
 **User is stuck mid-implementation:**
 ```
-User: /lf:explore
+User: /lf-explore
       The OAuth integration is more complex than expected
 
 You: [reads change artifacts]
@@ -245,7 +245,7 @@ You: That changes everything.
 
 There's no required ending. Discovery might:
 
-- **Flow into action**: "Ready to formalize? `/lf:formalize`"
+- **Flow into action**: "Ready to formalize? `/lf-formalize`"
 - **Result in artifact updates**: "Updated design.md with these decisions"
 - **Just provide clarity**: User has what they need, moves on
 - **Continue later**: "We can pick this up anytime"
@@ -262,9 +262,9 @@ When it feels like things are crystallizing, you might summarize:
 **Open questions**: [if any remain]
 
 **Next steps** (if ready):
-- Formalize a change: /lf:formalize <name>
-- Start implementing: /lf:do
-- Verify implementation: /lf:verify
+- Formalize a change: /lf-formalize <name>
+- Start implementing: /lf-do
+- Verify implementation: /lf-verify
 - Keep exploring: just keep talking
 ```
 

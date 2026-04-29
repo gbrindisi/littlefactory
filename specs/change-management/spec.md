@@ -9,7 +9,7 @@ Change directories live under `.littlefactory/changes/` and represent units of w
 The system SHALL store changes under `.littlefactory/changes/<name>/` where each change is a directory containing artifact files.
 
 #### Scenario: Change directory created by formalize skill
-- **WHEN** the `/lf:formalize` skill creates a new change
+- **WHEN** the `/lf-formalize` skill creates a new change
 - **THEN** a directory `.littlefactory/changes/<name>/` is created containing proposal.md, specs/\*/spec.md, design.md (optional), and tasks.json
 
 #### Scenario: Change directory contains tasks.json
@@ -35,7 +35,7 @@ The system SHALL expect changes to contain artifacts in a fixed sequence: propos
 - **THEN** the change is valid for `littlefactory run -c <name>`
 
 #### Scenario: Full change with all artifacts
-- **WHEN** a change is created by `/lf:formalize`
+- **WHEN** a change is created by `/lf-formalize`
 - **THEN** the directory contains proposal.md, at least one specs/\*/spec.md, optionally design.md, and tasks.json
 
 ## Boundaries

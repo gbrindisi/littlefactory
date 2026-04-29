@@ -17,7 +17,7 @@ The system SHALL embed a VERIFIER.md template in the binary at compile time, ana
 - **THEN** the system uses the local override instead of the embedded template
 
 ### Requirement: Verifier template instructs three-dimension check
-The template SHALL instruct the agent to check completeness, correctness, and coherence -- matching the dimensions from the existing `/lf:verify` skill.
+The template SHALL instruct the agent to check completeness, correctness, and coherence -- matching the dimensions from the existing `/lf-verify` skill.
 
 #### Scenario: Template references change artifacts
 - **WHEN** the template is rendered

@@ -1,5 +1,5 @@
 ---
-name: lf:archive
+name: lf-archive
 description: Archive a completed change - merge delta specs into project specs, enrich with boundaries and gotchas, clean up. Use to close out a change after verify.
 ---
 
@@ -36,7 +36,7 @@ Read all available artifacts from `.littlefactory/changes/<name>/`:
 
 Read each artifact that exists. Skip any that do not exist.
 
-Also check the conversation history for any `/lf:verify` report that was generated -- its warnings and suggestions are prime candidates for gotchas.
+Also check the conversation history for any `/lf-verify` report that was generated -- its warnings and suggestions are prime candidates for gotchas.
 
 **Detect specs_dir**: Read the `Factoryfile` (or `Factoryfile.yaml`) in the project root. Look for a `specs_dir` configuration key.
 
@@ -88,7 +88,7 @@ Use the **AskUserQuestion tool** to confirm:
 
 Surface candidate gotchas from multiple sources:
 
-1. **Verify findings**: If a `/lf:verify` report exists in conversation history, extract warnings and suggestions as gotcha candidates.
+1. **Verify findings**: If a `/lf-verify` report exists in conversation history, extract warnings and suggestions as gotcha candidates.
 2. **Design surprises**: Review `design.md` for trade-offs, risks, and rejected alternatives that future developers should know about.
 3. **Implementation experience**: Based on the conversation context, identify edge cases, workarounds, or unexpected behaviors encountered during implementation.
 

@@ -1,5 +1,5 @@
 ---
-name: lf:do
+name: lf-do
 description: Run a littlefactory change in the background and monitor progress. Use to execute a change, kick off implementation, or run littlefactory on a change.
 ---
 
@@ -17,7 +17,7 @@ ls .littlefactory/changes/
 
 - **If exactly one change directory exists:** use it automatically. Tell the user which change you selected.
 - **If multiple change directories exist:** list them and ask the user which change to run. Wait for their response before proceeding.
-- **If no change directories exist:** tell the user there are no changes to run. Suggest they create one with `/lf:formalize`.
+- **If no change directories exist:** tell the user there are no changes to run. Suggest they create one with `/lf-formalize`.
 
 The selected directory name is `<name>` for all subsequent commands.
 
@@ -25,7 +25,7 @@ The selected directory name is `<name>` for all subsequent commands.
 
 ## Step 2: Verify tasks exist
 
-Confirm that `.littlefactory/changes/<name>/tasks.json` exists and contains tasks. If it does not exist, tell the user the change has no tasks and suggest running `/lf:formalize` first.
+Confirm that `.littlefactory/changes/<name>/tasks.json` exists and contains tasks. If it does not exist, tell the user the change has no tasks and suggest running `/lf-formalize` first.
 
 ---
 
@@ -60,7 +60,7 @@ littlefactory status -c <name>
 
 When the background process finishes, report the result to the user:
 
-- **All tasks completed:** Tell the user the change finished successfully. Suggest running `/lf:verify` to validate the implementation.
+- **All tasks completed:** Tell the user the change finished successfully. Suggest running `/lf-verify` to validate the implementation.
 - **Some tasks failed:** Report which tasks failed and any error output. Suggest the user investigate the failures.
 - **Process was cancelled:** Acknowledge the cancellation and report how far it got.
 

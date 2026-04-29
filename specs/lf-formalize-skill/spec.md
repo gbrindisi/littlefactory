@@ -1,15 +1,15 @@
 # lf-formalize-skill
 
 ## What It Does
-The `/lf:formalize` skill turns a conversation into a structured change by deriving a change name from context and sequentially generating all artifacts (proposal.md, delta specs, optional design.md, tasks.json) in a single invocation. Each artifact builds on the previous ones, and tasks carry fat context so agents can execute them independently.
+The `/lf-formalize` skill turns a conversation into a structured change by deriving a change name from context and sequentially generating all artifacts (proposal.md, delta specs, optional design.md, tasks.json) in a single invocation. Each artifact builds on the previous ones, and tasks carry fat context so agents can execute them independently.
 
 ## Requirements
 
 ### Requirement: Formalize derives change from conversation
-The system SHALL provide an embedded `/lf:formalize` skill that derives the change name and content entirely from conversation context, requiring no arguments.
+The system SHALL provide an embedded `/lf-formalize` skill that derives the change name and content entirely from conversation context, requiring no arguments.
 
 #### Scenario: No arguments required
-- **WHEN** the user invokes `/lf:formalize` without arguments and the conversation contains sufficient context
+- **WHEN** the user invokes `/lf-formalize` without arguments and the conversation contains sufficient context
 - **THEN** the skill derives a kebab-case change name and generates all artifacts from the conversation
 
 #### Scenario: Formalize creates change directory
@@ -28,7 +28,7 @@ The system SHALL generate artifacts in a dependency chain where each artifact re
 - **THEN** the skill skips design.md generation and proceeds directly to tasks.json
 
 ### Requirement: Formalize generates tasks.json with fat context
-The system SHALL have the formalize skill generate tasks.json where each task has a self-contained description including context, scope, checklist, implementation plan, acceptance criteria, and key references. The formalize skill SHALL NOT generate a housekeeping spec merge task -- spec merging is handled interactively by `/lf:archive`.
+The system SHALL have the formalize skill generate tasks.json where each task has a self-contained description including context, scope, checklist, implementation plan, acceptance criteria, and key references. The formalize skill SHALL NOT generate a housekeeping spec merge task -- spec merging is handled interactively by `/lf-archive`.
 
 #### Scenario: Fat context task description
 - **WHEN** tasks.json is generated
@@ -40,7 +40,7 @@ The system SHALL have the formalize skill generate tasks.json where each task ha
 
 #### Scenario: No housekeeping merge task generated
 - **WHEN** tasks.json is generated regardless of specs_dir configuration
-- **THEN** no housekeeping spec merge task is appended -- spec merging is handled by `/lf:archive`
+- **THEN** no housekeeping spec merge task is appended -- spec merging is handled by `/lf-archive`
 
 ## Boundaries
 

@@ -1,11 +1,11 @@
 # skill-installation
 
 ## What It Does
-Embeds skill files (including lf:* skills) in the littlefactory binary, extracts them to .littlefactory/skills/ during init, and creates symlinks from .claude/skills/ for Claude Code integration.
+Embeds skill files (including lf-* skills) in the littlefactory binary, extracts them to .littlefactory/skills/ during init, and creates symlinks from .claude/skills/ for Claude Code integration.
 
 ## Requirements
 ### Requirement: Skills embedded in binary
-The system SHALL embed skill files in the littlefactory binary using Go embed, including the four `/lf:*` skills (lf-explore, lf-formalize, lf-do, lf-verify).
+The system SHALL embed skill files in the littlefactory binary using Go embed, including the four `/lf-*` skills (lf-explore, lf-formalize, lf-do, lf-verify).
 
 #### Scenario: Binary contains embedded skills
 - **WHEN** littlefactory binary is built

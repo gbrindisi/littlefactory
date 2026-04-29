@@ -1,19 +1,19 @@
 # lf-archive-skill
 
 ## What It Does
-The `/lf:archive` skill merges delta specs from a completed change into the project's long-lived specs directory, enriches specs with boundaries and gotchas through an interactive conversation, and optionally cleans up the change directory. It is the final step in the change lifecycle, turning implementation learnings into persistent project knowledge.
+The `/lf-archive` skill merges delta specs from a completed change into the project's long-lived specs directory, enriches specs with boundaries and gotchas through an interactive conversation, and optionally cleans up the change directory. It is the final step in the change lifecycle, turning implementation learnings into persistent project knowledge.
 
 ## Requirements
 
 ### Requirement: Archive skill merges delta specs into specs_dir
-The system SHALL provide an embedded `/lf:archive` skill that reads delta specs from a change directory and merges them into the project's `specs_dir`.
+The system SHALL provide an embedded `/lf-archive` skill that reads delta specs from a change directory and merges them into the project's `specs_dir`.
 
 #### Scenario: Archive with specs_dir configured
-- **WHEN** the user invokes `/lf:archive` and `specs_dir` is configured in Factoryfile
+- **WHEN** the user invokes `/lf-archive` and `specs_dir` is configured in Factoryfile
 - **THEN** the skill reads delta specs from `.littlefactory/changes/<name>/specs/` and merges them into the configured `specs_dir`
 
 #### Scenario: Archive without specs_dir configured
-- **WHEN** the user invokes `/lf:archive` and `specs_dir` is not configured in Factoryfile
+- **WHEN** the user invokes `/lf-archive` and `specs_dir` is not configured in Factoryfile
 - **THEN** the skill asks the user where to write specs, or skips the merge step entirely if the user declines
 
 #### Scenario: ADDED specs are copied as new files
@@ -62,11 +62,11 @@ The system SHALL write enriched specs using a canonical format with four section
 The system SHALL have the archive skill infer the change name from conversation context or prompt for selection if ambiguous.
 
 #### Scenario: Single active change
-- **WHEN** the user invokes `/lf:archive` and exactly one change exists under `.littlefactory/changes/`
+- **WHEN** the user invokes `/lf-archive` and exactly one change exists under `.littlefactory/changes/`
 - **THEN** the skill uses that change automatically
 
 #### Scenario: Multiple active changes
-- **WHEN** the user invokes `/lf:archive` and multiple changes exist
+- **WHEN** the user invokes `/lf-archive` and multiple changes exist
 - **THEN** the skill prompts the user to select which change to archive
 
 ### Requirement: Archive optionally cleans up change directory

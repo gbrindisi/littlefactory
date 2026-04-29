@@ -1,5 +1,5 @@
 ---
-name: lf:formalize
+name: lf-formalize
 description: Formalize a change - derive name from conversation, generate all artifacts (proposal, specs, design, tasks.json) in one shot. Use to turn a discussion into a structured change with implementation tasks.
 ---
 
@@ -278,7 +278,7 @@ After completing all artifacts, summarize:
 - List of artifacts created with brief descriptions
 - Number of tasks generated
 - "All artifacts created. Ready for implementation."
-- Prompt: "Run `/lf:do` or ask me to implement to start working on the tasks."
+- Prompt: "Run `/lf-do` or ask me to implement to start working on the tasks."
 
 ---
 
